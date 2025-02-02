@@ -1,0 +1,63 @@
+# Build Folders
+bin/
+obj/
+out/
+
+# User-specific Files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Dependencies
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+global.json
+
+# Logs & Debugging
+*.log
+logs/
+hs_err_pid*
+
+# Configurations
+appsettings*.json
+secrets.json
+
+# NuGet
+.nuget/
+**/packages/*
+!**/packages/build/
+**/packages/repositories.config
+
+# Entity Framework Migrations
+Migrations/
+
+# Rider & VS Code
+.idea/
+.vscode/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Testing
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.codecov
+*.cobertura.xml
+
+# Other
+*.pidb
+*.obj
+*.bak
+*.swp
+*.cache
+*.pdb
+
+# Ignore Generated Files
+Generated/
