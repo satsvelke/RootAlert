@@ -16,7 +16,7 @@ internal sealed class EmailAlertService : IAlertService
         _logger = logger;
     }
 
-    public Task SendAlertAsync(string message)
+    public Task SendAlertAsync(string summary)
     {
         throw new NotImplementedException();
     }

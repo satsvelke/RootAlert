@@ -11,11 +11,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
+// var sherLogOptions = new SherLogOptions
+// {
+//     AlertMethod = AlertType.Teams,
+//     WebhookUrl = "web hook url"
+// };
+
 var sherLogOptions = new SherLogOptions
 {
-    AlertMethod = AlertType.Teams,
-    WebhookUrl = "https://hooks.slack.com/services/YOUR_WEBHOOK"
+    AlertMethod = AlertType.Slack,
+    WebhookUrl = "web hook url"
 };
+
+
 
 builder.Services.AddSherLog(sherLogOptions);
 

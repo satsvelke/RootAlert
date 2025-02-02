@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sherlog.Alerts;
 using Sherlog.Config;
 using SherLog.Config;
+using SherLog.Processing;
 
 
 namespace SherLog.Middleware

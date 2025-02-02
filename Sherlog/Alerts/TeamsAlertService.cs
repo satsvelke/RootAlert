@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -19,9 +18,9 @@ public class TeamsAlertService : IAlertService
     }
 
 
-    public async Task SendAlertAsync(string message)
+    public async Task SendAlertAsync(string summary)
     {
-        var payload = new { text = message };
+        var payload = new { text = summary };
         var jsonPayload = JsonSerializer.Serialize(payload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 

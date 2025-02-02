@@ -18,9 +18,9 @@ internal sealed class SlackAlertService : IAlertService
         _logger = logger;
     }
 
-    public async Task SendAlertAsync(string message)
+    public async Task SendAlertAsync(string summary)
     {
-        var payload = new { text = message };
+        var payload = new { text = summary };
         var jsonPayload = JsonSerializer.Serialize(payload);
         var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 

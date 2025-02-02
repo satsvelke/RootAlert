@@ -2,7 +2,7 @@ using System;
 
 namespace Sherlog.Alerts;
 
-internal interface IAlertService
+public interface IAlertService
 {
-    Task SendAlertAsync(string message);
+    Task SendAlertAsync(string exception);
 }
