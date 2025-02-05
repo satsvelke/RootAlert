@@ -144,4 +144,3 @@ RootAlert is open-source and available under the **MIT License**.
 ## 🔗 Connect with Us
 📧 **Email:**  satsvelke@gmail.com  
 🐦 **Twitter:** [@satsvelke](https://twitter.com/satsvelke)  
-
