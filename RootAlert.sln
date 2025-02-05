@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert", "Sherlog\RootAlert.csproj", "{3CD1FFFB-192F-420C-B6A2-8517635CD556}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert", "RootAlert\RootAlert.csproj", "{3CD1FFFB-192F-420C-B6A2-8517635CD556}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlertSampleAPI", "SherlogSampleAPI\RootAlertSampleAPI.csproj", "{C90CA748-DA44-4704-8F67-27406F00C18F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlertSampleAPI", "RootAlertSampleAPI\RootAlertSampleAPI.csproj", "{C90CA748-DA44-4704-8F67-27406F00C18F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
