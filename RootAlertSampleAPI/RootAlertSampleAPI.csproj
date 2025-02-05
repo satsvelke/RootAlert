@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Sherlog/RootAlert.csproj" />
+    <ProjectReference Include="../RootAlert/RootAlert.csproj" />
   </ItemGroup>
 
 </Project>
