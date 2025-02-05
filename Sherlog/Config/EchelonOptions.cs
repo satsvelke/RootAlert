@@ -1,8 +1,7 @@
-using SherLog.Config;
 
-namespace Sherlog.Config
+namespace RootAlert.Config
 {
-    public class SherLogOptions
+    public class RootAlertOptions
     {
         public AlertType AlertMethod { get; set; } = AlertType.None;
         public string? WebhookUrl { get; set; }

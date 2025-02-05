@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Sherlog.Alerts;
-using SherLog.Processing;
-using System.Net;
+using RootAlert.Alerts;
+using RootAlert.Processing;
 
-namespace SherLog.Middleware
+namespace RootAlert.Middleware
 {
-    public class SherLogMiddleware
+    public class RootAlertMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<SherLogMiddleware> _logger;
+        private readonly ILogger<RootAlertMiddleware> _logger;
         private readonly IAlertService _alertService;
-        private readonly SherLogProcessor _processor;
+        private readonly RootAlertProcessor _processor;
 
-        public SherLogMiddleware(RequestDelegate next, ILogger<SherLogMiddleware> logger, IAlertService alertService, SherLogProcessor processor)
+        public RootAlertMiddleware(RequestDelegate next, ILogger<RootAlertMiddleware> logger, IAlertService alertService, RootAlertProcessor processor)
         {
             _next = next;
             _logger = logger;

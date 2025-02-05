@@ -1,6 +1,6 @@
-using System;
 
-namespace Sherlog.Alerts;
+
+namespace RootAlert.Alerts;
 
 public interface IAlertService
 {

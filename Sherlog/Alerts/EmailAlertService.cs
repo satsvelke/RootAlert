@@ -1,8 +1,8 @@
 
 using Microsoft.Extensions.Logging;
-using Sherlog.Config;
+using RootAlert.Config;
 
-namespace Sherlog.Alerts;
+namespace RootAlert.Alerts;
 
 internal sealed class EmailAlertService : IAlertService
 {

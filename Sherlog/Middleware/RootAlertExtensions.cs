@@ -1,20 +1,19 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sherlog.Alerts;
-using Sherlog.Config;
-using SherLog.Config;
-using SherLog.Processing;
+using RootAlert.Alerts;
+using RootAlert.Config;
+using RootAlert.Processing;
 
 
-namespace SherLog.Middleware
+namespace RootAlert.Middleware
 {
-    public static class SherLogExtensions
+    public static class RootAlertExtensions
     {
-        public static IServiceCollection AddSherLog(this IServiceCollection services, SherLogOptions options)
+        public static IServiceCollection AddRootAlert(this IServiceCollection services, RootAlertOptions options)
         {
             services.AddSingleton(options);
-            services.AddSingleton<SherLogProcessor>();
+            services.AddSingleton<RootAlertProcessor>();
 
             if (options.AlertMethod == AlertType.Slack)
             {
@@ -38,9 +37,9 @@ namespace SherLog.Middleware
             return services;
         }
 
-        public static IApplicationBuilder UseSherLog(this IApplicationBuilder app)
+        public static IApplicationBuilder UseRootAlert(this IApplicationBuilder app)
         {
-            return app.UseMiddleware<SherLogMiddleware>();
+            return app.UseMiddleware<RootAlertMiddleware>();
         }
     }
 }

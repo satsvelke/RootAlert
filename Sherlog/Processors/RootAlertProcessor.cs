@@ -1,22 +1,22 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Sherlog.Config;
-using Sherlog.Hashing;
+using RootAlert.Config;
+using RootAlert.Hashing;
 using System.Collections.Concurrent;
 using System.Text;
 
-namespace SherLog.Processing
+namespace RootAlert.Processing
 {
-    public class SherLogProcessor
+    public class RootAlertProcessor
     {
-        private readonly ILogger<SherLogProcessor> _logger;
+        private readonly ILogger<RootAlertProcessor> _logger;
         private static readonly ConcurrentDictionary<string, (int Count, string FormattedLog)> _errorBatch = new();
         private static readonly object _lock = new();
         private static DateTime _lastBatchSent = DateTime.UtcNow;
         private static DateTime? _firstErrorTime = null;
         private readonly TimeSpan _batchInterval;
 
-        public SherLogProcessor(ILogger<SherLogProcessor> logger, SherLogOptions options)
+        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, RootAlertOptions options)
         {
             _logger = logger;
             _batchInterval = options.BatchInterval;
@@ -105,7 +105,7 @@ namespace SherLog.Processing
             if (_errorBatch.Count == 0) return string.Empty;
 
             var batchSummary = new StringBuilder();
-            batchSummary.AppendLine("🚨 SherLog Batched Error Summary\n");
+            batchSummary.AppendLine("🚨 Root Alert Batched Error Summary\n");
 
             lock (_lock)
             {

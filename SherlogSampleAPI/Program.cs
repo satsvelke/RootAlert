@@ -1,8 +1,8 @@
 
 
-using Sherlog.Config;
-using SherLog.Config;
-using SherLog.Middleware;
+
+using RootAlert.Config;
+using RootAlert.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
-var sherLogOptions = new SherLogOptions
+var rootOptions = new RootAlertOptions
 {
     AlertMethod = AlertType.Teams,
     BatchInterval = TimeSpan.FromSeconds(5),
@@ -19,7 +19,7 @@ var sherLogOptions = new SherLogOptions
 };
 
 
-// var sherLogOptions = new SherLogOptions
+// var rootOptions = new RootAlertOptions
 // {
 //     AlertMethod = AlertType.Slack,
 //     BatchInterval = TimeSpan.FromSeconds(10),
@@ -28,7 +28,7 @@ var sherLogOptions = new SherLogOptions
 
 
 
-builder.Services.AddSherLog(sherLogOptions);
+builder.Services.AddRootAlert(rootOptions);
 
 
 var app = builder.Build();
@@ -39,7 +39,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseSherLog();
+app.UseRootAlert();
 
 app.UseHttpsRedirection();
 

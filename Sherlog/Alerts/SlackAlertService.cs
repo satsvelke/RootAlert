@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 
-namespace Sherlog.Alerts
+namespace RootAlert.Alerts
 {
     public class SlackAlertService : IAlertService
     {
@@ -23,7 +23,7 @@ namespace Sherlog.Alerts
             {
                 blocks = new object[]
                 {
-                    new { type = "section", text = new { type = "mrkdwn", text = "*🚨 SherLog Error Alert*" } },
+                    new { type = "section", text = new { type = "mrkdwn", text = "*🚨 Echelon Error Alert*" } },
                     new { type = "divider" },
                     new { type = "section", text = new { type = "mrkdwn", text = message } },
                     new { type = "divider" },

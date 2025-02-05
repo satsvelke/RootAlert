@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 
-namespace Sherlog.Alerts
+namespace RootAlert.Alerts
 {
     public class TeamsAlertService : IAlertService
     {
@@ -33,7 +33,7 @@ namespace Sherlog.Alerts
                             version = "1.4",
                             body = new object[]
                             {
-                                new { type = "TextBlock", size = "Large", weight = "Bolder", text = "🚨 SherLog Error Alert", color = "Attention" },
+                                new { type = "TextBlock", size = "Large", weight = "Bolder", text = "🚨 Echelon Error Alert", color = "Attention" },
                                 new { type = "TextBlock", text = message, wrap = true },
                                 new { type = "TextBlock", text = "🔗 Click below for details:", wrap = true },
                                 new { type = "ActionSet", actions = new object[]

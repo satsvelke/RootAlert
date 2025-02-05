@@ -1,4 +1,4 @@
-namespace SherLog.Config
+namespace RootAlert.Config
 {
     public enum AlertType
     {
