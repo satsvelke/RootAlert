@@ -13,6 +13,7 @@ namespace SherLog.Middleware
     {
         public static IServiceCollection AddSherLog(this IServiceCollection services, SherLogOptions options)
         {
+            services.AddSingleton(options);
             services.AddSingleton<SherLogProcessor>();
 
             if (options.AlertMethod == AlertType.Slack)

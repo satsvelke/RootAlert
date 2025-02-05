@@ -1,44 +1,71 @@
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 
-namespace Sherlog.Alerts;
-
-public class TeamsAlertService : IAlertService
+namespace Sherlog.Alerts
 {
-    private readonly HttpClient _httpClient;
-    private readonly string _webhookUrl;
-    private readonly ILogger<TeamsAlertService> _logger;
-
-    public TeamsAlertService(string webhookUrl, ILogger<TeamsAlertService> logger)
+    public class TeamsAlertService : IAlertService
     {
-        _httpClient = new HttpClient();
-        _webhookUrl = webhookUrl;
-        _logger = logger;
-    }
+        private readonly HttpClient _httpClient;
+        private readonly string _webhookUrl;
+        private readonly ILogger<TeamsAlertService> _logger;
 
-
-    public async Task SendAlertAsync(string summary)
-    {
-        var payload = new { text = summary };
-        var jsonPayload = JsonSerializer.Serialize(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        try
+        public TeamsAlertService(string webhookUrl, ILogger<TeamsAlertService> logger)
         {
-            var response = await _httpClient.PostAsync(_webhookUrl, content);
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Webhook alert sent successfully.");
-            }
-            else
-            {
-                _logger.LogError($"Failed to send alert. Status: {response.StatusCode}");
-            }
+            _httpClient = new HttpClient();
+            _webhookUrl = webhookUrl;
+            _logger = logger;
         }
-        catch (Exception ex)
+
+        public async Task SendAlertAsync(string message)
         {
-            _logger.LogError(ex, "Error occurred while sending webhook alert.");
+            var adaptiveCard = new
+            {
+                type = "message",
+                attachments = new[]
+                {
+                    new
+                    {
+                        contentType = "application/vnd.microsoft.card.adaptive",
+                        content = new
+                        {
+                            type = "AdaptiveCard",
+                            version = "1.4",
+                            body = new object[]
+                            {
+                                new { type = "TextBlock", size = "Large", weight = "Bolder", text = "🚨 SherLog Error Alert", color = "Attention" },
+                                new { type = "TextBlock", text = message, wrap = true },
+                                new { type = "TextBlock", text = "🔗 Click below for details:", wrap = true },
+                                new { type = "ActionSet", actions = new object[]
+                                    {
+                                        new { type = "Action.OpenUrl", title = "View Error Logs" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(adaptiveCard);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await _httpClient.PostAsync(_webhookUrl, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Teams alert sent successfully.");
+                }
+                else
+                {
+                    _logger.LogError($"Failed to send Teams alert. Status: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while sending Teams alert.");
+            }
         }
     }
 }

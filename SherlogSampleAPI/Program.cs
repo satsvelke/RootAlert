@@ -11,17 +11,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
-// var sherLogOptions = new SherLogOptions
-// {
-//     AlertMethod = AlertType.Teams,
-//     WebhookUrl = "web hook url"
-// };
-
 var sherLogOptions = new SherLogOptions
 {
-    AlertMethod = AlertType.Slack,
-    WebhookUrl = "web hook url"
+    AlertMethod = AlertType.Teams,
+    BatchInterval = TimeSpan.FromSeconds(5),
+    WebhookUrl = "url"
 };
+
+
+// var sherLogOptions = new SherLogOptions
+// {
+//     AlertMethod = AlertType.Slack,
+//     BatchInterval = TimeSpan.FromSeconds(10),
+//     WebhookUrl = "url"
+// };
 
 
 
@@ -62,6 +65,15 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+
+app.MapGet("/getuser", () =>
+{
+
+    throw new Exception("wheather api failed to call");
+
+
+});
 
 app.Run();
 

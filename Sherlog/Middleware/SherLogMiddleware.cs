@@ -39,12 +39,12 @@ namespace SherLog.Middleware
         {
 
 
-            _processor.AddToBatch(exception);
+            _processor.AddToBatch(exception, context);
 
             // Send batch alert if time threshold met
             if (_processor.ShouldSendBatch())
             {
-                string batchMessage = _processor.GetBatchSummaryMarkdown();
+                string batchMessage = _processor.GetBatchSummary();
                 if (!string.IsNullOrEmpty(batchMessage))
                 {
                     await _alertService.SendAlertAsync(batchMessage);

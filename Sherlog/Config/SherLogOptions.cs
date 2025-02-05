@@ -7,6 +7,7 @@ namespace Sherlog.Config
         public AlertType AlertMethod { get; set; } = AlertType.None;
         public string? WebhookUrl { get; set; }
         public EmailSettings? EmailSettings { get; set; }
+        public TimeSpan BatchInterval { get; set; } = TimeSpan.FromMinutes(30);
     }
 
     public class EmailSettings

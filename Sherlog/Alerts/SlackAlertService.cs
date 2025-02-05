@@ -1,44 +1,59 @@
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 
-namespace Sherlog.Alerts;
-
-internal sealed class SlackAlertService : IAlertService
+namespace Sherlog.Alerts
 {
-
-    private readonly HttpClient _httpClient;
-    private readonly string _webhookUrl;
-    private readonly ILogger<SlackAlertService> _logger;
-
-    public SlackAlertService(string webhookUrl, ILogger<SlackAlertService> logger)
+    public class SlackAlertService : IAlertService
     {
-        _httpClient = new HttpClient();
-        _webhookUrl = webhookUrl;
-        _logger = logger;
-    }
+        private readonly HttpClient _httpClient;
+        private readonly string _webhookUrl;
+        private readonly ILogger<SlackAlertService> _logger;
 
-    public async Task SendAlertAsync(string summary)
-    {
-        var payload = new { text = summary };
-        var jsonPayload = JsonSerializer.Serialize(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        try
+        public SlackAlertService(string webhookUrl, ILogger<SlackAlertService> logger)
         {
-            var response = await _httpClient.PostAsync(_webhookUrl, content);
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Webhook alert sent successfully.");
-            }
-            else
-            {
-                _logger.LogError($"Failed to send alert. Status: {response.StatusCode}");
-            }
+            _httpClient = new HttpClient();
+            _webhookUrl = webhookUrl;
+            _logger = logger;
         }
-        catch (Exception ex)
+
+        public async Task SendAlertAsync(string message)
         {
-            _logger.LogError(ex, "Error occurred while sending webhook alert.");
+            var slackMessage = new
+            {
+                blocks = new object[]
+                {
+                    new { type = "section", text = new { type = "mrkdwn", text = "*🚨 SherLog Error Alert*" } },
+                    new { type = "divider" },
+                    new { type = "section", text = new { type = "mrkdwn", text = message } },
+                    new { type = "divider" },
+                    new { type = "actions", elements = new object[]
+                        {
+                            new { type = "button", text = new { type = "plain_text", text = "View Error Logs" }}
+                        }
+                    }
+                }
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(slackMessage);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await _httpClient.PostAsync(_webhookUrl, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Slack alert sent successfully.");
+                }
+                else
+                {
+                    _logger.LogError($"Failed to send Slack alert. Status: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while sending Slack alert.");
+            }
         }
     }
 }
