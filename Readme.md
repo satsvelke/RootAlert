@@ -36,17 +36,34 @@ using RootAlert.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var rootAlertOptions = new RootAlertOptions
+var rootAlertOptions = new List<RootAlertOptions>
 {
-    AlertMethod = AlertType.Teams, // Change to Slack if needed
-    WebhookUrl = "https://your-teams-or-slack-webhook-url",
-    BatchInterval = TimeSpan.FromMinutes(1) // Send alerts every 1 minute
+    new RootAlertOptions
+    {
+        AlertMethod = AlertType.Teams,
+        WebhookUrl = "https://your-teams-webhook-url",
+        BatchInterval = TimeSpan.FromMinutes(1)
+    },
+    new RootAlertOptions
+    {
+        AlertMethod = AlertType.Slack,
+        WebhookUrl = "https://your-slack-webhook-url",
+        BatchInterval = TimeSpan.FromMinutes(1)
+    }
 };
 
 builder.Services.AddRootAlert(rootAlertOptions);
 
 var app = builder.Build();
-app.UseMiddleware<RootAlertMiddleware>(); // Enable RootAlert middleware
+
+// ✅ Handle exceptions first
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// ✅ Then, log errors with RootAlert
+app.UseRootAlert();
+
+app.UseRouting();
+app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
 app.Run();
 ```
