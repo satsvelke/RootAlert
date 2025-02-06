@@ -33,7 +33,7 @@ namespace RootAlert.Alerts
                             version = "1.4",
                             body = new object[]
                             {
-                                new { type = "TextBlock", size = "Large", weight = "Bolder", text = "🚨 Root Alert Error Alert", color = "Attention" },
+                                new { type = "TextBlock", size = "Large", weight = "Bolder", text = "🚨 Root Alert - Batch Summary", color = "Attention" },
                                 new { type = "TextBlock", text = message, wrap = true },
                                 new { type = "TextBlock", text = "🔗 Click below for details:", wrap = true },
                                 new { type = "ActionSet", actions = new object[]

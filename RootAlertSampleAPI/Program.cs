@@ -1,6 +1,3 @@
-
-
-
 using RootAlert.Config;
 using RootAlert.Middleware;
 
@@ -11,27 +8,33 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
-var rootOptions = new RootAlertOptions
+var rootOptions = new List<RootAlertOptions>();
+
+rootOptions.Add(new RootAlertOptions
 {
     AlertMethod = AlertType.Teams,
-    BatchInterval = TimeSpan.FromSeconds(5),
-    WebhookUrl = "url"
-};
+    BatchInterval = TimeSpan.FromSeconds(10),
+    WebhookUrl = "web hook url"
+});
 
-
-// var rootOptions = new RootAlertOptions
-// {
-//     AlertMethod = AlertType.Slack,
-//     BatchInterval = TimeSpan.FromSeconds(10),
-//     WebhookUrl = "url"
-// };
-
+rootOptions.Add(new RootAlertOptions
+{
+    AlertMethod = AlertType.Slack,
+    BatchInterval = TimeSpan.FromSeconds(10),
+    WebhookUrl = "web hook url"
+});
 
 
 builder.Services.AddRootAlert(rootOptions);
 
 
+
+
+
+
 var app = builder.Build();
+
+app.UseRootAlert();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -39,7 +42,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseRootAlert();
 
 app.UseHttpsRedirection();
 
@@ -69,10 +71,7 @@ app.MapGet("/weatherforecast", () =>
 
 app.MapGet("/getuser", () =>
 {
-
     throw new Exception("wheather api failed to call");
-
-
 });
 
 app.Run();

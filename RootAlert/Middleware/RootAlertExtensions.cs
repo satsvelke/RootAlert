@@ -5,34 +5,39 @@ using RootAlert.Alerts;
 using RootAlert.Config;
 using RootAlert.Processing;
 
-
 namespace RootAlert.Middleware
 {
     public static class RootAlertExtensions
     {
-        public static IServiceCollection AddRootAlert(this IServiceCollection services, RootAlertOptions options)
+        public static IServiceCollection AddRootAlert(this IServiceCollection services, List<RootAlertOptions> optionsList)
         {
-            services.AddSingleton(options);
+            services.AddSingleton(optionsList);
             services.AddSingleton<RootAlertProcessor>();
 
-            if (options.AlertMethod == AlertType.Slack)
+            services.AddSingleton<IAlertService>(provider =>
             {
-                services.AddSingleton<IAlertService>(provider =>
-                    new SlackAlertService(options.WebhookUrl!, provider.GetRequiredService<ILogger<SlackAlertService>>()));
-            }
+                var alertServices = new List<IAlertService>();
+                var options = provider.GetRequiredService<List<RootAlertOptions>>();
+                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
 
-            if (options.AlertMethod == AlertType.Teams)
-            {
-                services.AddSingleton<IAlertService>(provider =>
-                    new TeamsAlertService(options.WebhookUrl!, provider.GetRequiredService<ILogger<TeamsAlertService>>()));
-            }
+                foreach (var option in options)
+                {
+                    switch (option.AlertMethod)
+                    {
+                        case AlertType.Slack:
+                            alertServices.Add(new SlackAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<SlackAlertService>()));
+                            break;
+                        case AlertType.Teams:
+                            alertServices.Add(new TeamsAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<TeamsAlertService>()));
+                            break;
+                        case AlertType.Email:
+                            alertServices.Add(new EmailAlertService(option.EmailSettings!, loggerFactory.CreateLogger<EmailAlertService>()));
+                            break;
+                    }
+                }
 
-
-            if (options.AlertMethod == AlertType.Email)
-            {
-                services.AddSingleton<IAlertService>(provider =>
-                    new EmailAlertService(options.EmailSettings!, provider.GetRequiredService<ILogger<EmailAlertService>>()));
-            }
+                return new MultiAlertService(alertServices);
+            });
 
             return services;
         }

@@ -28,19 +28,16 @@ namespace RootAlert.Middleware
             }
             catch (Exception ex)
             {
-                _ = HandleExceptionAsync(context, ex);
-
-                await _next(context);
+                await HandleExceptionAsync(context, ex);
+                throw;
             }
         }
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-
-
+            _logger.LogError(exception, "RootAlert captured an exception.");
             _processor.AddToBatch(exception, context);
 
-            // Send batch alert if time threshold met
             if (_processor.ShouldSendBatch())
             {
                 string batchMessage = _processor.GetBatchSummary();

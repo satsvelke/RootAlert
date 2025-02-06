@@ -16,10 +16,10 @@ namespace RootAlert.Processing
         private static DateTime? _firstErrorTime = null;
         private readonly TimeSpan _batchInterval;
 
-        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, RootAlertOptions options)
+        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, List<RootAlertOptions> optionsList)
         {
             _logger = logger;
-            _batchInterval = options.BatchInterval;
+            _batchInterval = optionsList[0].BatchInterval; // ✅ Use first option’s batch interval (or customize this)
         }
 
         public string FormatLog(Exception exception, HttpContext context)
@@ -56,7 +56,6 @@ namespace RootAlert.Processing
             return logBuilder.ToString();
         }
 
-
         public void AddToBatch(Exception exception, HttpContext context)
         {
             string errorKey = HashGenerator.GenerateErrorHash(exception);
@@ -71,12 +70,7 @@ namespace RootAlert.Processing
                 else
                 {
                     _errorBatch[errorKey] = (1, formattedLog);
-
-                    // If this is the first error in batch, start timer
-                    if (_firstErrorTime == null)
-                    {
-                        _firstErrorTime = DateTime.UtcNow;
-                    }
+                    _firstErrorTime ??= DateTime.UtcNow;
                 }
             }
         }
@@ -84,20 +78,7 @@ namespace RootAlert.Processing
         public bool ShouldSendBatch()
         {
             var now = DateTime.UtcNow;
-
-            // Send batch if time since last batch exceeds user-defined interval
-            if ((now - _lastBatchSent) >= _batchInterval)
-            {
-                return true;
-            }
-
-            // If the first error in batch has waited too long, force send
-            if (_firstErrorTime.HasValue && (now - _firstErrorTime.Value) >= _batchInterval * 2)
-            {
-                return true;
-            }
-
-            return false;
+            return (now - _lastBatchSent) >= _batchInterval || (_firstErrorTime.HasValue && (now - _firstErrorTime.Value) >= _batchInterval * 2);
         }
 
         public string GetBatchSummary()
@@ -105,7 +86,6 @@ namespace RootAlert.Processing
             if (_errorBatch.Count == 0) return string.Empty;
 
             var batchSummary = new StringBuilder();
-            batchSummary.AppendLine("🚨 Root Alert Batched Error Summary\n");
 
             lock (_lock)
             {
@@ -116,7 +96,6 @@ namespace RootAlert.Processing
                     batchSummary.AppendLine("\n---\n");
                 }
 
-                // Clear batch and reset timers
                 _errorBatch.Clear();
                 _lastBatchSent = DateTime.UtcNow;
                 _firstErrorTime = null;

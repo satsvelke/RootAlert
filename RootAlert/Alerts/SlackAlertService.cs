@@ -23,7 +23,7 @@ namespace RootAlert.Alerts
             {
                 blocks = new object[]
                 {
-                    new { type = "section", text = new { type = "mrkdwn", text = "*🚨 Root Alert Error Alert*" } },
+                    new { type = "section", text = new { type = "mrkdwn", text = "*🚨 Root Alert - Batch Summary*" } },
                     new { type = "divider" },
                     new { type = "section", text = new { type = "mrkdwn", text = message } },
                     new { type = "divider" },
