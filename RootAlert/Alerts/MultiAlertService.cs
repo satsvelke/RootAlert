@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using RootAlert.Processing;
 
 namespace RootAlert.Alerts
 {
@@ -10,15 +12,15 @@ namespace RootAlert.Alerts
             _alertServices = alertServices;
         }
 
-        public async Task SendAlertAsync(string message)
+        public async Task SendAlertAsync(Exception exception, HttpContext context)
         {
-            var tasks = new List<Task>();
+            var tasks = _alertServices.Select(service => service.SendAlertAsync(exception, context));
+            await Task.WhenAll(tasks);
+        }
 
-            foreach (var service in _alertServices)
-            {
-                tasks.Add(service.SendAlertAsync(message));
-            }
-
+        public async Task SendBatchAlertAsync(List<(int count, Exception exception, RequestInfo requestInfo)> errors)
+        {
+            var tasks = _alertServices.Select(service => service.SendBatchAlertAsync(errors));
             await Task.WhenAll(tasks);
         }
     }

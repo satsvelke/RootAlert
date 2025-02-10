@@ -1,107 +1,79 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using RootAlert.Alerts;
 using RootAlert.Config;
 using RootAlert.Hashing;
 using System.Collections.Concurrent;
-using System.Text;
 
 namespace RootAlert.Processing
 {
-    public class RootAlertProcessor
+    public record RequestInfo(string Url, string Method, Dictionary<string, string> Headers);
+
+    public class RootAlertProcessor : IDisposable
     {
         private readonly ILogger<RootAlertProcessor> _logger;
-        private static readonly ConcurrentDictionary<string, (int Count, string FormattedLog)> _errorBatch = new();
+        private static readonly ConcurrentDictionary<string, (int Count, Exception exception, RequestInfo requestInfo)> _errorBatch = new();
         private static readonly object _lock = new();
-        private static DateTime _lastBatchSent = DateTime.UtcNow;
-        private static DateTime? _firstErrorTime = null;
         private readonly TimeSpan _batchInterval;
+        private readonly IAlertService _alertService;
+        private readonly System.Timers.Timer _batchTimer;
 
-        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, List<RootAlertOptions> optionsList)
+        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, List<RootAlertOptions> optionsList, IAlertService alertService)
         {
             _logger = logger;
-            _batchInterval = optionsList[0].BatchInterval; // ✅ Use first option’s batch interval (or customize this)
-        }
+            _batchInterval = optionsList[0].BatchInterval;
+            _alertService = alertService;
 
-        public string FormatLog(Exception exception, HttpContext context)
-        {
-            var logBuilder = new StringBuilder();
-            var errorKey = HashGenerator.GenerateErrorHash(exception);
-
-            logBuilder.AppendLine($"🆔 Error ID: {errorKey}");
-            logBuilder.AppendLine($"⏳ Timestamp: {DateTime.UtcNow:MM/dd/yyyy h:mm:ss tt}");
-            logBuilder.AppendLine("----------------------------------------------------");
-
-            logBuilder.AppendLine("🌐 REQUEST DETAILS");
-            logBuilder.AppendLine($"🔗 URL: {context.Request.Path}");
-            logBuilder.AppendLine($"📡 HTTP Method: {context.Request.Method}");
-            logBuilder.AppendLine("----------------------------------------------------");
-
-            logBuilder.AppendLine("📩 REQUEST HEADERS");
-            foreach (var header in context.Request.Headers)
-            {
-                logBuilder.AppendLine($"📝 {header.Key}: {header.Value}");
-            }
-            logBuilder.AppendLine("----------------------------------------------------");
-
-            logBuilder.AppendLine("⚠️ EXCEPTION DETAILS");
-            logBuilder.AppendLine($"❗ Type: {exception.GetType().Name}");
-            logBuilder.AppendLine($"💬 Message: {exception.Message}");
-            logBuilder.AppendLine("----------------------------------------------------");
-
-            logBuilder.AppendLine("🔍 STACK TRACE");
-            logBuilder.AppendLine(exception.StackTrace);
-            logBuilder.AppendLine("----------------------------------------------------");
-
-            _logger.LogInformation("Exception processed for alerting.");
-            return logBuilder.ToString();
+            // ✅ Initialize & Start Background Timer
+            _batchTimer = new System.Timers.Timer(_batchInterval.TotalMilliseconds);
+            _batchTimer.Elapsed += async (sender, e) => await ProcessBatch();
+            _batchTimer.AutoReset = true;
+            _batchTimer.Start();
         }
 
         public void AddToBatch(Exception exception, HttpContext context)
         {
             string errorKey = HashGenerator.GenerateErrorHash(exception);
-            string formattedLog = FormatLog(exception, context);
+
+            var requestInfo = new RequestInfo(
+                context.Request.Path,
+                context.Request.Method,
+                context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString())
+            );
 
             lock (_lock)
             {
                 if (_errorBatch.ContainsKey(errorKey))
                 {
-                    _errorBatch[errorKey] = (_errorBatch[errorKey].Count + 1, formattedLog);
+                    _errorBatch[errorKey] = (_errorBatch[errorKey].Count + 1, exception, requestInfo);
                 }
                 else
                 {
-                    _errorBatch[errorKey] = (1, formattedLog);
-                    _firstErrorTime ??= DateTime.UtcNow;
+                    _errorBatch[errorKey] = (1, exception, requestInfo);
                 }
             }
         }
 
-        public bool ShouldSendBatch()
+        private async Task ProcessBatch()
         {
-            var now = DateTime.UtcNow;
-            return (now - _lastBatchSent) >= _batchInterval || (_firstErrorTime.HasValue && (now - _firstErrorTime.Value) >= _batchInterval * 2);
-        }
+            if (_errorBatch.Count == 0) return;
 
-        public string GetBatchSummary()
-        {
-            if (_errorBatch.Count == 0) return string.Empty;
-
-            var batchSummary = new StringBuilder();
+            List<(int count, Exception exception, RequestInfo requestInfo)> batchedErrors;
 
             lock (_lock)
             {
-                foreach (var (errorKey, (count, formattedLog)) in _errorBatch)
-                {
-                    batchSummary.AppendLine($"🔴 Error Count: `{count}`");
-                    batchSummary.AppendLine(formattedLog);
-                    batchSummary.AppendLine("\n---\n");
-                }
-
+                batchedErrors = _errorBatch.Values.ToList();
                 _errorBatch.Clear();
-                _lastBatchSent = DateTime.UtcNow;
-                _firstErrorTime = null;
             }
 
-            return batchSummary.ToString();
+            _logger.LogInformation($"🚀 Sending batched alert with {batchedErrors.Count} errors.");
+            await _alertService.SendBatchAlertAsync(batchedErrors);
+        }
+
+        public void Dispose()
+        {
+            _batchTimer?.Stop();
+            _batchTimer?.Dispose();
         }
     }
 }

@@ -1,6 +1,8 @@
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RootAlert.Config;
+using RootAlert.Processing;
 
 namespace RootAlert.Alerts;
 
@@ -16,7 +18,12 @@ internal sealed class EmailAlertService : IAlertService
         _logger = logger;
     }
 
-    public Task SendAlertAsync(string summary)
+    public Task SendAlertAsync(Exception exception, HttpContext httpContext)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SendBatchAlertAsync(List<(int count, Exception exception, RequestInfo requestInfo)> errors)
     {
         throw new NotImplementedException();
     }

@@ -13,22 +13,19 @@ var rootOptions = new List<RootAlertOptions>();
 rootOptions.Add(new RootAlertOptions
 {
     AlertMethod = AlertType.Teams,
-    BatchInterval = TimeSpan.FromSeconds(10),
-    WebhookUrl = "web hook url"
+    BatchInterval = TimeSpan.FromSeconds(40),
+    WebhookUrl = "webhook"
 });
 
 rootOptions.Add(new RootAlertOptions
 {
     AlertMethod = AlertType.Slack,
-    BatchInterval = TimeSpan.FromSeconds(10),
-    WebhookUrl = "web hook url"
+    BatchInterval = TimeSpan.FromSeconds(40),
+    WebhookUrl = "webhook"
 });
 
 
 builder.Services.AddRootAlert(rootOptions);
-
-
-
 
 
 
