@@ -15,12 +15,12 @@ RootAlert is a lightweight **real-time error tracking** and alerting library for
 RootAlert is available on **NuGet**. Install it using:
 
 ```sh
- dotnet add package RootAlert --version 0.1.3
+ dotnet add package RootAlert --version 0.1.4
 ```
 
 Or via Package Manager:
 ```sh
- Install-Package RootAlert -Version 0.1.3
+ Install-Package RootAlert -Version 0.1.4
 ```
 
 ---
