@@ -9,15 +9,17 @@ namespace RootAlert.Middleware
 {
     public static class RootAlertExtensions
     {
-        public static IServiceCollection AddRootAlert(this IServiceCollection services, List<RootAlertOptions> optionsList)
+        public static IServiceCollection AddRootAlert(this IServiceCollection services, RootAlertSetting rootAlertSetting)
         {
-            services.AddSingleton(optionsList);
+            services.AddSingleton(rootAlertSetting);
+
+            services.AddSingleton<IEnumerable<RootAlertOption>>(rootAlertSetting.RootAlertOptions!);
             services.AddSingleton<RootAlertProcessor>();
 
             services.AddSingleton<IAlertService>(provider =>
             {
                 var alertServices = new List<IAlertService>();
-                var options = provider.GetRequiredService<List<RootAlertOptions>>();
+                var options = provider.GetRequiredService<IEnumerable<RootAlertOption>>().ToList();
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
 
                 foreach (var option in options)
@@ -41,6 +43,7 @@ namespace RootAlert.Middleware
 
             return services;
         }
+
 
         public static IApplicationBuilder UseRootAlert(this IApplicationBuilder app)
         {

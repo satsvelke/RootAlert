@@ -1,12 +1,18 @@
 
 namespace RootAlert.Config
 {
-    public class RootAlertOptions
+
+    public class RootAlertSetting
+    {
+        public TimeSpan BatchInterval { get; set; } = TimeSpan.FromMinutes(30);
+        public IList<RootAlertOption>? RootAlertOptions { get; set; }
+    }
+
+    public class RootAlertOption
     {
         public AlertType AlertMethod { get; set; } = AlertType.None;
         public string? WebhookUrl { get; set; }
         public EmailSettings? EmailSettings { get; set; }
-        public TimeSpan BatchInterval { get; set; } = TimeSpan.FromMinutes(30);
     }
 
     public class EmailSettings

@@ -8,24 +8,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
-var rootOptions = new List<RootAlertOptions>();
 
-rootOptions.Add(new RootAlertOptions
+var rootAlertOptions = new List<RootAlertOption>
 {
-    AlertMethod = AlertType.Teams,
-    BatchInterval = TimeSpan.FromSeconds(40),
-    WebhookUrl = "webhook"
-});
+    new RootAlertOption
+    {
+        AlertMethod = AlertType.Teams,
+        WebhookUrl = ""
+    },
+    new RootAlertOption
+    {
+        AlertMethod = AlertType.Slack,
+        WebhookUrl = ""
+    }
+};
 
-rootOptions.Add(new RootAlertOptions
+var rootAlertSetting = new RootAlertSetting
 {
-    AlertMethod = AlertType.Slack,
     BatchInterval = TimeSpan.FromSeconds(40),
-    WebhookUrl = "webhook"
-});
+    RootAlertOptions = rootAlertOptions,
+};
 
-
-builder.Services.AddRootAlert(rootOptions);
+builder.Services.AddRootAlert(rootAlertSetting);
 
 
 

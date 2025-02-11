@@ -18,13 +18,12 @@ namespace RootAlert.Processing
         private readonly IAlertService _alertService;
         private readonly System.Timers.Timer _batchTimer;
 
-        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, List<RootAlertOptions> optionsList, IAlertService alertService)
+        public RootAlertProcessor(ILogger<RootAlertProcessor> logger, RootAlertSetting rootAlertSetting, IAlertService alertService)
         {
             _logger = logger;
-            _batchInterval = optionsList[0].BatchInterval;
+            _batchInterval = rootAlertSetting.BatchInterval;
             _alertService = alertService;
 
-            // ✅ Initialize & Start Background Timer
             _batchTimer = new System.Timers.Timer(_batchInterval.TotalMilliseconds);
             _batchTimer.Elapsed += async (sender, e) => await ProcessBatch();
             _batchTimer.AutoReset = true;
