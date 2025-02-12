@@ -1,15 +1,17 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RootAlert.Hashing;
-
-internal static class HashGenerator
+namespace RootAlert.Hashing
 {
-    internal static string GenerateErrorHash(Exception exception)
+    internal static class HashGenerator
     {
-        using var sha256 = SHA256.Create();
-        string rawData = exception.Message + exception.StackTrace;
-        byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-        return Convert.ToBase64String(bytes);
+        internal static async Task<string> GenerateErrorHash(Exception exception)
+        {
+            using var sha256 = SHA256.Create();
+            string rawData = exception.Message + exception.StackTrace;
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rawData));
+            byte[] bytes = await sha256.ComputeHashAsync(stream);
+            return Convert.ToBase64String(bytes);
+        }
     }
 }

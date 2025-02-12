@@ -23,6 +23,7 @@ var rootAlertOptions = new List<RootAlertOption>
     }
 };
 
+
 var rootAlertSetting = new RootAlertSetting
 {
     BatchInterval = TimeSpan.FromSeconds(40),

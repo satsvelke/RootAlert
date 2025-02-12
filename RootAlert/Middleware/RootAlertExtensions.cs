@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using RootAlert.Alerts;
 using RootAlert.Config;
 using RootAlert.Processing;
+using RootAlert.Storage;
+using RootAlert.Storage.Memory;
 
 namespace RootAlert.Middleware
 {
@@ -15,6 +17,7 @@ namespace RootAlert.Middleware
 
             services.AddSingleton<IEnumerable<RootAlertOption>>(rootAlertSetting.RootAlertOptions!);
             services.AddSingleton<RootAlertProcessor>();
+            services.AddSingleton<IRootAlertStorage, MemoryAlertStorage>();
 
             services.AddSingleton<IAlertService>(provider =>
             {
