@@ -6,7 +6,6 @@ using RootAlert.Storage;
 
 namespace RootAlert.Processing
 {
-    public record RequestInfo(string Url, string Method, Dictionary<string, string> Headers);
 
     public class RootAlertProcessor : IDisposable
     {

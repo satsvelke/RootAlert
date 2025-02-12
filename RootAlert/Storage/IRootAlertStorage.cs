@@ -1,6 +1,6 @@
 
 using Microsoft.AspNetCore.Http;
-using RootAlert.Processing;
+using RootAlert.Config;
 
 namespace RootAlert.Storage
 {

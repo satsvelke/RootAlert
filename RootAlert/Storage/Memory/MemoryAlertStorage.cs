@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
+using RootAlert.Config;
 using RootAlert.Hashing;
 using RootAlert.Processing;
 
