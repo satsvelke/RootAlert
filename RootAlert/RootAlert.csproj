@@ -14,15 +14,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.1" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Include LICENSE.txt and README.md in the NuGet package -->
     <None Include="LICENSE.txt" Pack="true" PackagePath="/" />
     <None Include="README.md" Pack="true" PackagePath="/" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Storage/Redis/" />
   </ItemGroup>
 </Project>

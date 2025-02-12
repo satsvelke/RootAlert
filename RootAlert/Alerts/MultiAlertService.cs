@@ -12,13 +12,7 @@ namespace RootAlert.Alerts
             _alertServices = alertServices;
         }
 
-        public async Task SendAlertAsync(Exception exception, HttpContext context)
-        {
-            var tasks = _alertServices.Select(service => service.SendAlertAsync(exception, context));
-            await Task.WhenAll(tasks);
-        }
-
-        public async Task SendBatchAlertAsync(List<(int count, Exception exception, RequestInfo requestInfo)> errors)
+        public async Task SendBatchAlertAsync(IList<ErrorLogEntry> errors)
         {
             var tasks = _alertServices.Select(service => service.SendBatchAlertAsync(errors));
             await Task.WhenAll(tasks);

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RootAlert.Config;
-using RootAlert.Processing;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -13,108 +12,67 @@ namespace RootAlert.Alerts
         private readonly HttpClient _httpClient;
         private readonly string _webhookUrl;
         private readonly ILogger<SlackAlertService> _logger;
+        private readonly RootAlertSetting _rootAlertSetting;
 
-        public SlackAlertService(string webhookUrl, ILogger<SlackAlertService> logger)
+
+        public SlackAlertService(string webhookUrl, ILogger<SlackAlertService> logger, RootAlertSetting rootAlertSetting)
         {
             _httpClient = new HttpClient();
             _webhookUrl = webhookUrl;
             _logger = logger;
+            _rootAlertSetting = rootAlertSetting;
         }
 
-        public async Task SendAlertAsync(Exception exception, HttpContext context)
+        public async Task SendBatchAlertAsync(IList<ErrorLogEntry> errors)
         {
+            var rootAlertOption = _rootAlertSetting.RootAlertOptions?
+                .FirstOrDefault(c => c.AlertMethod == AlertType.Slack);
 
-            string requestUrl = context.Request.Path;
-            string requestMethod = context.Request.Method;
+            var errorBlocks = new List<object>();
 
-            var headersList = context.Request.Headers
-                .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
-                .Select(header => $"*{header.Key}:* `{header.Value}`")
-                .ToList();
+            foreach (var (error, index) in errors.Select((e, i) => (e, i)))
+            {
+                var headersList = error.Request!.Headers
+                        .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase)) // Exclude Authorization
+                        .Select(header => $"**{header.Key}:** `{header.Value}`")
+                        .ToList();
 
 
-            string headersFormatted = string.Join("\n", headersList);
+                string headersFormatted = headersList.Any() ? string.Join("\n", headersList) : "No headers available.";
+                string stackTrace = error.Exception?.StackTrace ?? "No stack trace available.";
+                string errorMessage = error.Exception?.Message ?? "No error message.";
 
-            string stackTrace = exception.StackTrace ?? "No stack trace available.";
+                var errorDetails = new List<object>
+                    {
+                        new { type = "header", text = new { type = "plain_text", text = $"🔴 Error #{index + 1}", emoji = true } },
+                        new { type = "section", text = new { type = "plain_text", text = $"Error Count: {error.Count}", emoji = true } },
+                        new { type = "section", text = new { type = "mrkdwn", text = $"📅 *Timestamp:* `{DateTime.Now:MM/dd/yyyy h:mm:ss tt}`" } },
+                        new { type = "section", text = new { type = "mrkdwn", text = $"🌐 *URL:* `{error.Request?.Url ?? "N/A"}`" } },
+                        new { type = "section", text = new { type = "mrkdwn", text = $"📡 *Method:* `{error.Request?.Method ?? "N/A"}`" } },
+                        new { type = "section", text = new { type = "mrkdwn", text = $"📩 *Headers:*\n{headersFormatted}" } },
+                        new { type = "section", text = new { type = "mrkdwn", text = $"⚠️ *Exception:* `{errorMessage}`" } },
+                        new { type = "section", text = new { type = "mrkdwn", text = $"🔍 *Stack Trace:*\n```{stackTrace}```" } },
+                        new { type = "divider" }
+                    };
+
+                if (!string.IsNullOrWhiteSpace(rootAlertOption?.DashboardUrl))
+                {
+                    errorDetails.Add(new
+                    {
+                        type = "actions",
+                        elements = new object[]
+                        {
+                    new { type = "button", text = new { type = "plain_text", text = "View Error Logs" }, url = rootAlertOption.DashboardUrl, style = "primary" }
+                        }
+                    });
+                }
+
+                errorBlocks.AddRange(errorDetails);
+            }
 
             var slackMessage = new
             {
-                blocks = new object[]
-                {
-            new { type = "section", text = new { type = "mrkdwn", text = "*🚨 Root Alert*" } },
-            new { type = "divider" },
-
-            new { type = "section", text = new { type = "mrkdwn", text = $"📅 *Timestamp:* `{DateTime.Now.ToString("d MMM yyyy, h:mm:ss tt", CultureInfo.InvariantCulture)}`" } },
-            new { type = "section", text = new { type = "mrkdwn", text = $"🌐 *Request URL:* `{requestUrl}`" } },
-            new { type = "section", text = new { type = "mrkdwn", text = $"📡 *HTTP Method:* `{requestMethod}`" } },
-
-            new { type = "section", text = new { type = "mrkdwn", text = "*📩 Request Headers:*" } },
-            new { type = "section", text = new { type = "mrkdwn", text = headersFormatted } },
-
-            new { type = "section", text = new { type = "mrkdwn", text = "*⚠️ Exception Details*" } },
-            new { type = "section", text = new { type = "mrkdwn", text = $"❗ *Type:* `{exception.GetType().Name}`" } },
-            new { type = "section", text = new { type = "mrkdwn", text = $"💬 *Message:* `{exception.Message}`" } },
-
-            new { type = "section", text = new { type = "mrkdwn", text = "*🔍 Stack Trace:*" } },
-            new { type = "section", text = new { type = "mrkdwn", text = $"```{stackTrace}```" } },
-
-            new { type = "divider" },
-            new { type = "actions", elements = new object[]
-                {
-                    new { type = "button", text = new { type = "plain_text", text = "View Error Logs" }, url = "https://your-error-dashboard-url", style = "primary" }
-                }
-            }
-                }
-            };
-
-            var jsonPayload = JsonSerializer.Serialize(slackMessage);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-            try
-            {
-                var response = await _httpClient.PostAsync(_webhookUrl, content);
-                if (response.IsSuccessStatusCode)
-                {
-                    _logger.LogInformation("Slack alert sent successfully.");
-                }
-                else
-                {
-                    _logger.LogError($"Failed to send Slack alert. Status: {response.StatusCode}");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while sending Slack alert.");
-            }
-        }
-
-        public async Task SendBatchAlertAsync(List<(int count, Exception exception, RequestInfo requestInfo)> errors)
-        {
-            var errorBlocks = errors.Select((error, index) =>
-            {
-                var headersList = error.requestInfo.Headers
-                    .Select(header => $"*{header.Key}:* `{header.Value}`")
-                    .ToList();
-
-                string headersFormatted = string.Join("\n", headersList);
-                string stackTrace = error.exception.StackTrace ?? "No stack trace available.";
-
-                return new object[]
-                {
-                    new { type = "header", text = new { type = "plain_text", text = $"🔴 Error #{index + 1}", emoji = true } },
-                    new { type = "section", text = new { type = "mrkdwn", text = $"📅 *Timestamp:* `{DateTime.UtcNow:MM/dd/yyyy h:mm:ss tt}`" } },
-                    new { type = "section", text = new { type = "mrkdwn", text = $"🌐 *URL:* `{error.requestInfo.Url}`" } },
-                    new { type = "section", text = new { type = "mrkdwn", text = $"📡 *Method:* `{error.requestInfo.Method}`" } },
-                    new { type = "section", text = new { type = "mrkdwn", text = $"📩 *Headers:*\n{headersFormatted}" } },
-                    new { type = "section", text = new { type = "mrkdwn", text = $"⚠️ *Exception:* `{error.exception.Message}`" } },
-                    new { type = "section", text = new { type = "mrkdwn", text = $"🔍 *Stack Trace:*\n```{stackTrace}```" } },
-                    new { type = "divider" }
-                };
-            }).SelectMany(x => x).ToArray();
-
-            var slackMessage = new
-            {
-                blocks = new object[]
+                blocks = new List<object>
                 {
                     new { type = "section", text = new { type = "mrkdwn", text = "*🚨 Root Alert - Batched Error Summary*" } },
                     new { type = "divider" }
@@ -125,6 +83,7 @@ namespace RootAlert.Alerts
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync(_webhookUrl, content);
+            response.EnsureSuccessStatusCode();
         }
     }
 }

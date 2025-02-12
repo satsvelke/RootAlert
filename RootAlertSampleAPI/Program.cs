@@ -1,5 +1,6 @@
 using RootAlert.Config;
 using RootAlert.Middleware;
+using RootAlert.Storage.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,20 +14,26 @@ var rootAlertOptions = new List<RootAlertOption>
 {
     new RootAlertOption
     {
+
         AlertMethod = AlertType.Teams,
+        // DashboardUrl = "https://google.com",
         WebhookUrl = ""
     },
     new RootAlertOption
     {
         AlertMethod = AlertType.Slack,
+        DashboardUrl = "https://google.com",
         WebhookUrl = ""
     }
 };
 
 
+
+
 var rootAlertSetting = new RootAlertSetting
 {
-    BatchInterval = TimeSpan.FromSeconds(40),
+    Storage = new RedisAlertStorage("127.0.0.1:6379"),
+    BatchInterval = TimeSpan.FromSeconds(10),
     RootAlertOptions = rootAlertOptions,
 };
 

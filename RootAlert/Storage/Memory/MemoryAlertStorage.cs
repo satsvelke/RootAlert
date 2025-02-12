@@ -1,16 +1,14 @@
-using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
 using RootAlert.Config;
 using RootAlert.Hashing;
-using RootAlert.Processing;
 
 namespace RootAlert.Storage.Memory;
 
 public class MemoryAlertStorage : IRootAlertStorage
 {
 
-    private static readonly ConcurrentDictionary<string, (int Count, Exception exception, RequestInfo requestInfo)> _errorBatch = new();
+    private static readonly ConcurrentDictionary<string, ErrorLogEntry> _errorBatch = new();
     private static readonly object _lock = new();
 
     public async Task AddToBatchAsync(Exception exception, HttpContext context)
@@ -23,26 +21,32 @@ public class MemoryAlertStorage : IRootAlertStorage
             context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString())
         );
 
-        lock (_lock)
-        {
-            if (_errorBatch.ContainsKey(errorKey))
+        var exceptionInfo = new ExceptionInfo(exception.Message, exception!.StackTrace ?? "No stack trace available.", exception!.GetType().Name);
+
+        _errorBatch.AddOrUpdate(
+            errorKey,
+            key => new ErrorLogEntry
             {
-                _errorBatch[errorKey] = (_errorBatch[errorKey].Count + 1, exception, requestInfo);
-            }
-            else
+                Count = 1,
+                Exception = exceptionInfo,
+                Request = requestInfo
+            },
+            (key, existingEntry) =>
             {
-                _errorBatch[errorKey] = (1, exception, requestInfo);
+                existingEntry.Count += 1;
+                return existingEntry;
             }
-        }
+        );
     }
 
     public Task ClearBatchAsync()
     {
-        return Task.Run(() => _errorBatch.Clear());
+        _errorBatch.Clear();
+        return Task.CompletedTask;
     }
 
-    public Task<List<(int Count, Exception Exception, RequestInfo RequestInfo)>> GetBatchAsync()
+    public Task<List<ErrorLogEntry>> GetBatchAsync()
     {
-        return Task.Run(() => _errorBatch.Values.ToList());
+        return Task.FromResult(_errorBatch.Values.ToList());
     }
 }

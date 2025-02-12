@@ -5,7 +5,6 @@ using RootAlert.Alerts;
 using RootAlert.Config;
 using RootAlert.Processing;
 using RootAlert.Storage;
-using RootAlert.Storage.Memory;
 
 namespace RootAlert.Middleware
 {
@@ -17,7 +16,9 @@ namespace RootAlert.Middleware
 
             services.AddSingleton<IEnumerable<RootAlertOption>>(rootAlertSetting.RootAlertOptions!);
             services.AddSingleton<RootAlertProcessor>();
-            services.AddSingleton<IRootAlertStorage, MemoryAlertStorage>();
+
+            services.AddSingleton<IRootAlertStorage>(rootAlertSetting.Storage);
+
 
             services.AddSingleton<IAlertService>(provider =>
             {
@@ -30,10 +31,10 @@ namespace RootAlert.Middleware
                     switch (option.AlertMethod)
                     {
                         case AlertType.Slack:
-                            alertServices.Add(new SlackAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<SlackAlertService>()));
+                            alertServices.Add(new SlackAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<SlackAlertService>(), rootAlertSetting));
                             break;
                         case AlertType.Teams:
-                            alertServices.Add(new TeamsAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<TeamsAlertService>()));
+                            alertServices.Add(new TeamsAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<TeamsAlertService>(), rootAlertSetting));
                             break;
                         case AlertType.Email:
                             alertServices.Add(new EmailAlertService(option.EmailSettings!, loggerFactory.CreateLogger<EmailAlertService>()));

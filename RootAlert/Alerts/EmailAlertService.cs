@@ -27,5 +27,10 @@ namespace RootAlert.Alerts
         {
             throw new NotImplementedException();
         }
+
+        public Task SendBatchAlertAsync(IList<ErrorLogEntry> errors)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

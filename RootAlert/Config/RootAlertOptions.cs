@@ -1,9 +1,13 @@
 
+using RootAlert.Storage;
+using RootAlert.Storage.Memory;
+
 namespace RootAlert.Config
 {
 
     public class RootAlertSetting
     {
+        public IRootAlertStorage Storage { get; set; } = new MemoryAlertStorage();
         public TimeSpan BatchInterval { get; set; } = TimeSpan.FromMinutes(30);
         public IList<RootAlertOption>? RootAlertOptions { get; set; }
     }
@@ -12,6 +16,7 @@ namespace RootAlert.Config
     {
         public AlertType AlertMethod { get; set; } = AlertType.None;
         public string? WebhookUrl { get; set; }
+        public string? DashboardUrl { get; set; }
         public EmailSettings? EmailSettings { get; set; }
     }
 
