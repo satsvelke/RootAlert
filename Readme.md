@@ -116,6 +116,13 @@ If your application has a global exception-handling middleware, register RootAle
 app.UseMiddleware<ExceptionHandlingMiddleware>(); // Your existing middleware
 app.UseRootAlert(); // Register RootAlert after the exception middleware
 ```
+## 🏆 Microsoft Teams Integration  
+RootAlert supports **Microsoft Teams** via **Adaptive Cards** for structured error logging.
+
+### **🔹 How to Get a Teams Webhook URL**  
+RootAlert supports **Microsoft Teams** integration via:  
+1. **Incoming Webhooks (Connector)** – Simple and quick setup. (Will be deprecated) 
+2. **Microsoft Teams Workflow API** – Easier than Power Automate, with a built-in Webhook template.  
 
 ---
 ## **🔹 Option 1: Using an Incoming Webhook (Connector)**  
