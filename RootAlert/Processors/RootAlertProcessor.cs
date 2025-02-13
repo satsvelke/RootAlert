@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RootAlert.Alerts;
@@ -9,7 +8,7 @@ namespace RootAlert.Processing
 {
     public class RootAlertProcessor : IDisposable
     {
-        private readonly ILogger<RootAlertProcessor> _logger;
+        private readonly ILogger _logger;
         private readonly TimeSpan _batchInterval;
         private readonly IAlertService _alertService;
         private readonly IRootAlertStorage _rootAlertStorage;
@@ -23,10 +22,7 @@ namespace RootAlert.Processing
             _alertService = alertService;
             _rootAlertStorage = rootAlertStorage;
 
-            _processingTask = Task.Factory.StartNew(
-                                () => StartProcessingAsync(_cancellationTokenSource.Token),
-                                TaskCreationOptions.LongRunning
-                            );
+            _processingTask = Task.Run(() => StartProcessingAsync(_cancellationTokenSource.Token));
         }
 
         public void AddToBatch(Exception exception, HttpContext context)
@@ -36,37 +32,60 @@ namespace RootAlert.Processing
 
         private async Task StartProcessingAsync(CancellationToken cancellationToken)
         {
-            var stopwatch = Stopwatch.StartNew();
-
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                if (stopwatch.Elapsed >= _batchInterval)
+                while (!cancellationToken.IsCancellationRequested)
                 {
+                    await Task.Delay(_batchInterval, cancellationToken);
                     await ProcessBatch();
-                    stopwatch.Restart();
                 }
-
-                await Task.Delay(100, cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                _logger.LogInformation("Batch processing task was cancelled.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in the batch processing loop.");
             }
         }
 
         private async Task ProcessBatch()
         {
-            var errorBatch = await _rootAlertStorage.GetBatchAsync();
+            try
+            {
+                var errorBatch = await _rootAlertStorage.GetBatchAsync();
 
-            if (errorBatch.Count == 0) return;
+                if (errorBatch.Count == 0) return;
 
-            _logger.LogInformation($"🚀 Sending batched alert with {errorBatch.Count} errors.");
-
-            await _alertService.SendBatchAlertAsync(errorBatch);
-            await _rootAlertStorage.ClearBatchAsync();
+                _logger.LogInformation($"🚀 Sending batched alert with {errorBatch.Count} errors.");
+                await _alertService.SendBatchAlertAsync(errorBatch);
+                await _rootAlertStorage.ClearBatchAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process the error batch.");
+            }
         }
 
         public void Dispose()
         {
             _cancellationTokenSource.Cancel();
-            _processingTask?.Wait();
-            _cancellationTokenSource.Dispose();
+            try
+            {
+                _processingTask?.Wait();
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var inner in ex.InnerExceptions)
+                {
+                    _logger.LogError(inner, "Exception occurred while waiting for batch processing task to complete.");
+                }
+            }
+            finally
+            {
+                _cancellationTokenSource.Dispose();
+            }
         }
     }
 }

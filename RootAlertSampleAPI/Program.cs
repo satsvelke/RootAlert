@@ -9,31 +9,25 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 
-
 var rootAlertOptions = new List<RootAlertOption>
 {
     new RootAlertOption
     {
-
         AlertMethod = AlertType.Teams,
-        // DashboardUrl = "https://google.com",
         WebhookUrl = ""
     },
     new RootAlertOption
     {
         AlertMethod = AlertType.Slack,
-        DashboardUrl = "https://google.com",
         WebhookUrl = ""
     }
 };
 
 
-
-
 var rootAlertSetting = new RootAlertSetting
 {
     Storage = new RedisAlertStorage("127.0.0.1:6379"),
-    BatchInterval = TimeSpan.FromSeconds(10),
+    BatchInterval = TimeSpan.FromSeconds(20),
     RootAlertOptions = rootAlertOptions,
 };
 

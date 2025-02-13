@@ -8,6 +8,7 @@ RootAlert is a lightweight **real-time error tracking** and alerting library for
 - 📡 **Supports Microsoft Teams (Adaptive Cards) & Slack (Blocks & Sections)**  
 - ⏳ **Customizable batch interval using `TimeSpan`**  
 - 📩 **Rich error logs including request details, headers, and stack traces**  
+- 🔗 **Supports Redis for persistent storage**
 
 ---
 
@@ -15,12 +16,12 @@ RootAlert is a lightweight **real-time error tracking** and alerting library for
 RootAlert is available on **NuGet**. Install it using:
 
 ```sh
- dotnet add package RootAlert --version 0.1.4
+ dotnet add package RootAlert --version 0.1.5
 ```
 
 Or via Package Manager:
 ```sh
- Install-Package RootAlert -Version 0.1.4
+ Install-Package RootAlert -Version 0.1.5
 ```
 
 ---
@@ -30,29 +31,37 @@ Or via Package Manager:
 ### **1️⃣ Configure RootAlert in `Program.cs`**  
 Add RootAlert to your services and configure it to send alerts to **Microsoft Teams** or **Slack**.
 
+
+**If you do not configure a storage option, RootAlert will default to in-memory storage.**
+
 ```csharp
 using RootAlert.Config;
 using RootAlert.Extensions;
+using RootAlert.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var rootAlertOptions = new List<RootAlertOptions>
+var rootAlertOptions = new List<RootAlertOption>
 {
-    new RootAlertOptions
+    new RootAlertOption
     {
         AlertMethod = AlertType.Teams,
-        WebhookUrl = "https://your-teams-webhook-url",
-        BatchInterval = TimeSpan.FromMinutes(1)
+        WebhookUrl = "https://your-teams-webhook-url"
     },
-    new RootAlertOptions
+    new RootAlertOption
     {
         AlertMethod = AlertType.Slack,
-        WebhookUrl = "https://your-slack-webhook-url",
-        BatchInterval = TimeSpan.FromMinutes(1)
+        WebhookUrl = "https://your-slack-webhook-url"
     }
 };
 
-builder.Services.AddRootAlert(rootAlertOptions);
+var rootAlertSetting = new RootAlertSetting
+{
+    BatchInterval = TimeSpan.FromSeconds(20),
+    RootAlertOptions = rootAlertOptions,
+};
+
+builder.Services.AddRootAlert(rootAlertSetting);
 
 var app = builder.Build();
 
@@ -69,6 +78,29 @@ app.Run();
 ```
 
 ✅ **Now, RootAlert will automatically capture all unhandled exceptions!**  
+
+---
+
+## ⚡ Redis Storage for Persistent Error Logging
+RootAlert supports **Redis-based storage**, ensuring that errors are not lost even if the application restarts.
+
+### **🛠 Configuring Redis Storage**
+To use Redis as the error storage backend, configure `RootAlertSetting` as shown:
+
+```csharp
+var rootAlertSetting = new RootAlertSetting
+{
+    Storage = new RedisAlertStorage("127.0.0.1:6379"),
+    BatchInterval = TimeSpan.FromSeconds(20),
+    RootAlertOptions = rootAlertOptions,
+};
+```
+
+### **🔹 Why Use Redis Storage?**
+- ✅ Ensures logs persist even if the app restarts or the App Pool recycles.
+- ✅ Allows centralized error tracking across multiple instances.
+- ✅ Ideal for **distributed applications** that run across multiple servers.
+
 
 ---
 
@@ -89,47 +121,8 @@ app.UseRootAlert(); // Register RootAlert after the exception middleware
 ## 🏆 Microsoft Teams Integration  
 
 RootAlert supports **Microsoft Teams** integration via:  
-1. **Incoming Webhooks (Connector)** – Simple and quick setup. (Will be deprecated) 
+1. **Incoming Webhooks (Connector)** – Simple and quick setup. (Will be deprecated)  
 2. **Microsoft Teams Workflow API** – Easier than Power Automate, with a built-in Webhook template.  
-
----
-
-## **🔹 Option 1: Using an Incoming Webhook (Connector)**  
-This method is the easiest way to receive error alerts in a Teams channel.
-
-### **📌 Steps to Get a Teams Webhook URL**  
-1. Open **Microsoft Teams** and go to the desired channel.  
-2. Click **"…" (More options) → Connectors**.  
-3. Find **"Incoming Webhook"** and click **"Configure"**.  
-4. Name it **RootAlert Notifications** and click **Create**.  
-5. Copy the **Webhook URL** and use it in your RootAlert configuration.  
-
----
-
-## **🔹 Option 2: Using Microsoft Teams Workflow API (via Webhook Template)**  
-This method is even easier than Power Automate and uses a built-in workflow to receive data via Webhook.
-
-🎥 **Watch this video for a step-by-step guide:**  
-[![Microsoft Teams Workflow API Setup](https://img.youtube.com/vi/jHTU_jUnswY/0.jpg)](https://www.youtube.com/watch?v=jHTU_jUnswY)  
-🔗 **[YouTube Link: https://www.youtube.com/watch?v=jHTU_jUnswY](https://www.youtube.com/watch?v=jHTU_jUnswY)**  
-
-
-### **📌 Steps to Configure Teams Workflow API**  
-1. **Open Microsoft Teams and Go to Workflows**  
-   - Click on **“…” (More options) → Workflows**.  --> Create 
-
-2. **Select "Post to a channel when a webhook request is received" Template**  
-   - Search for **"Post to a channel when a webhook request is received"** and select the **ready-made template**.  
-   - Click **Next** to proceed.  
-
-3. **Choose Team and Channel**  
-   - Select the **Team** where you want to post alerts.  
-   - Choose the **Channel** where notifications should appear.  
-
-4. **Copy the Webhook URL**  
-   - After selecting the Team and Channel, Teams will generate a **Webhook URL**.  
-   - Copy this URL and use it in your RootAlert settings.  
-
 
 ---
 
@@ -142,20 +135,15 @@ RootAlert supports **Slack** using **Blocks & Sections** for structured messages
 3. Click **"Add New Webhook to Workspace"** and select a channel.  
 4. Copy the **Webhook URL** and use it in `RootAlertOptions`.
 
-### **🔹 Example Slack Alert (Blocks & Sections)**  
-RootAlert sends Slack messages in **a structured format**:
-
-![Slack Alert](https://user-images.githubusercontent.com/example/slack-message.png)
-
 ---
 
 ## ⚙️ Configuration Options  
-| Option                        | Description                                   |
-| ----------------------------- | --------------------------------------------- |
-| `AlertMethod`                 | `Teams` or `Slack` (Choose alerting platform) |
-| `WebhookUrl`                  | Webhook URL for Teams or Slack                |
-| `BatchInterval`               | TimeSpan (e.g., `TimeSpan.FromSeconds(30)`)   |
-| `EmailSettings` (Coming Soon) | Configure SMTP for email alerts               |
+| Option          | Description                                   |
+| --------------- | --------------------------------------------- |
+| `AlertMethod`   | `Teams` or `Slack` (Choose alerting platform) |
+| `WebhookUrl`    | Webhook URL for Teams or Slack                |
+| `BatchInterval` | TimeSpan (e.g., `TimeSpan.FromSeconds(20)`)   |
+| `Storage`       | Supports Redis (`RedisAlertStorage`)          |
 
 ---
 
@@ -186,7 +174,9 @@ RootAlert captures **rich error details** including **request details, headers, 
 ---
 
 ## 🛠 Roadmap  
-🔹 **Database Storage** - Store logs in SQL, Redis, or NoSQL  
+
+🔹 **Database Storage** - Store logs in MSSQL & Postgres
+
 🔹 **Email Alerts** - Send exception reports via SMTP  
 🔹 **Log Severity Filtering** - Send only critical errors  
 
@@ -205,4 +195,3 @@ RootAlert is open-source and available under the **MIT License**.
 ## 🔗 Connect with Us  
 📧 **Email:**  satsvelke@gmail.com  
 🐦 **Twitter:** [@satsvelke](https://twitter.com/satsvelke)  
-
