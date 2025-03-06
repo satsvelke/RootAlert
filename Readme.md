@@ -116,14 +116,47 @@ If your application has a global exception-handling middleware, register RootAle
 app.UseMiddleware<ExceptionHandlingMiddleware>(); // Your existing middleware
 app.UseRootAlert(); // Register RootAlert after the exception middleware
 ```
-
----
 ## 🏆 Microsoft Teams Integration  
+RootAlert supports **Microsoft Teams** via **Adaptive Cards** for structured error logging.
 
+### **🔹 How to Get a Teams Webhook URL**  
 RootAlert supports **Microsoft Teams** integration via:  
-1. **Incoming Webhooks (Connector)** – Simple and quick setup. (Will be deprecated)  
+1. **Incoming Webhooks (Connector)** – Simple and quick setup. (Will be deprecated) 
 2. **Microsoft Teams Workflow API** – Easier than Power Automate, with a built-in Webhook template.  
 
+---
+## **🔹 Option 1: Using an Incoming Webhook (Connector)**  
+This method is the easiest way to receive error alerts in a Teams channel.
+### **📌 Steps to Get a Teams Webhook URL**  
+1. Open **Microsoft Teams** and go to the desired channel.  
+2. Click **"…" (More options) → Connectors**.  
+3. Find **"Incoming Webhook"** and click **"Configure"**.  
+4. Name it **RootAlert Notifications** and click **Create**.  
+5. Copy the **Webhook URL** and use it in `RootAlertOptions`.
+5. Copy the **Webhook URL** and use it in your RootAlert configuration.  
+---
+## **🔹 Option 2: Using Microsoft Teams Workflow API (via Webhook Template)**  
+This method is even easier than Power Automate and uses a built-in workflow to receive data via Webhook.
+🎥 **Watch this video for a step-by-step guide:**  
+[![Microsoft Teams Workflow API Setup](https://img.youtube.com/vi/jHTU_jUnswY/0.jpg)](https://www.youtube.com/watch?v=jHTU_jUnswY)  
+🔗 **[YouTube Link: https://www.youtube.com/watch?v=jHTU_jUnswY](https://www.youtube.com/watch?v=jHTU_jUnswY)**  
+### **📌 Steps to Configure Teams Workflow API**  
+1. **Open Microsoft Teams and Go to Workflows**  
+   - Click on **“…” (More options) → Workflows**.  --> Create 
+2. **Select "Post to a channel when a webhook request is received" Template**  
+   - Search for **"Post to a channel when a webhook request is received"** and select the **ready-made template**.  
+   - Click **Next** to proceed.  
+3. **Choose Team and Channel**  
+   - Select the **Team** where you want to post alerts.  
+   - Choose the **Channel** where notifications should appear.  
+
+### **🔹 Example Teams Alert (Adaptive Card)**  
+RootAlert sends alerts as **rich Adaptive Cards**:
+4. **Copy the Webhook URL**  
+   - After selecting the Team and Channel, Teams will generate a **Webhook URL**.  
+   - Copy this URL and use it in your RootAlert settings.  
+
+![Teams Adaptive Card](https://user-images.githubusercontent.com/example/teams-card.png)
 ---
 
 ## 💬 Slack Integration  
