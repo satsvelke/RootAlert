@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert", "RootAlert\Root
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlertSampleAPI", "RootAlertSampleAPI\RootAlertSampleAPI.csproj", "{C90CA748-DA44-4704-8F67-27406F00C18F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert.Redis", "RootAlert.Redis\RootAlert.Redis.csproj", "{9C6FF935-0E5F-4DA3-9989-10D670B779A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C90CA748-DA44-4704-8F67-27406F00C18F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C90CA748-DA44-4704-8F67-27406F00C18F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C90CA748-DA44-4704-8F67-27406F00C18F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C6FF935-0E5F-4DA3-9989-10D670B779A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C6FF935-0E5F-4DA3-9989-10D670B779A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C6FF935-0E5F-4DA3-9989-10D670B779A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C6FF935-0E5F-4DA3-9989-10D670B779A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 using RootAlert.Config;
 using RootAlert.Middleware;
-using RootAlert.Storage.Redis;
+using RootAlert.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +16,11 @@ var rootAlertOptions = new List<RootAlertOption>
         AlertMethod = AlertType.Teams,
         WebhookUrl = ""
     },
-    new RootAlertOption
-    {
-        AlertMethod = AlertType.Slack,
-        WebhookUrl = ""
-    }
+    // new RootAlertOption
+    // {
+    //     AlertMethod = AlertType.Slack,
+    //     WebhookUrl = ""
+    // }
 };
 
 

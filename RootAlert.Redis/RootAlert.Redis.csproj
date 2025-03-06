@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+   <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>RootAlert.Redis</PackageId>
+    <Version>0.1.5</Version>
+    <Authors>satsvelke</Authors>
+    <Description>A Alert System for Exceptions .NET applications using Redis.</Description>
+    <PackageTags>Alerts,Exceptions,.NET</PackageTags>
+    <RepositoryUrl>https://github.com/satsvelke/RootAlert</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../RootAlert/RootAlert.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+  </ItemGroup>
+
+</Project>
