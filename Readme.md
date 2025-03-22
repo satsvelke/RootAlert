@@ -17,12 +17,12 @@ RootAlert is a lightweight **real-time error tracking** and alerting library for
 RootAlert is available on **NuGet**. Install it using:
 
 ```sh
- dotnet add package RootAlert --version 0.1.6
+ dotnet add package RootAlert 
 ```
 
 Or via Package Manager:
 ```sh
- Install-Package RootAlert -Version 0.1.6
+ Install-Package RootAlert 
 ```
 
 ---
@@ -92,7 +92,7 @@ RootAlert now supports **separate libraries** for persistent storage:
 
 #### **Installation**
 ```sh
- dotnet add package RootAlert.Redis --version 0.1.0
+ dotnet add package RootAlert.Redis 
 ```
 
 #### **Implementation**
@@ -118,7 +118,7 @@ var rootAlertSetting = new RootAlertSetting
 
 #### **Installation**
 ```sh
- dotnet add package RootAlert.MSSQL --version 0.1.0
+ dotnet add package RootAlert.MSSQL 
 ```
 
 #### **Implementation**
@@ -127,10 +127,27 @@ using RootAlert.MSSQL;
 
 var rootAlertSetting = new RootAlertSetting
 {
-    Storage = new SqlServerAlertStorage("Server=myServerAddress;Database=myDB;User Id=myUser;Password=myPassword;"),
+    Storage = new MSSQLAlertStorage("Server=myServerAddress;Database=myDB;User Id=myUser;Password=myPassword;"),
     BatchInterval = TimeSpan.FromSeconds(20),
     RootAlertOptions = rootAlertOptions,
 };
+```
+
+#### **SQL Table Schema for MSSQL**
+To store logs in MSSQL, create the following table:
+```sql
+CREATE TABLE RootAlertLogs (
+    Id INT IDENTITY PRIMARY KEY,
+    ExceptionMessage NVARCHAR(MAX) NOT NULL,
+    StackTrace NVARCHAR(MAX) NULL,
+    ExceptionName NVARCHAR(255) NULL, 
+    RequestUrl NVARCHAR(MAX) NULL, 
+    HttpMethod NVARCHAR(10) NULL, 
+    Headers NVARCHAR(MAX) NULL, 
+    ErrorCount INT DEFAULT 1, 
+    CreatedAt DATETIME2 DEFAULT GETUTCDATE(),
+    Processed BIT DEFAULT 0
+);
 ```
 
 ### **🔹 Why Use MSSQL Storage?**
@@ -208,29 +225,33 @@ RootAlert supports **Slack** using **Blocks & Sections** for structured messages
 
 ---
 
-## 🚨 Example Error Alert  
-RootAlert captures **rich error details** including **request details, headers, and stack traces**:
-
+## 🚨 Example Batched Error Summary Alert  
 ```
-🆔 Error ID: abc123
-⏳ Timestamp: 02/05/2025 4:02:41 AM
-----------------------------------------------------
-🌐 REQUEST DETAILS
-🔗 URL: /weatherforecast
+🚨 Root Alert - Batched Error Summary
+
+🔴 Error #1
+Error Count: 3
+📅 Timestamp: 03/22/2025 6:30:29 PM
+🌐 Request URL: /getuser
 📡 HTTP Method: GET
+📩 Request Headers:
+Accept: application/json
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Host: api.example.com
 ----------------------------------------------------
-📩 REQUEST HEADERS
-📝 User-Agent: Mozilla/5.0
+⚠️ Exception Details
+❗ Type: HttpRequestException
+💬 Message: Weather API failed to respond
 ----------------------------------------------------
-⚠️ EXCEPTION DETAILS
-❗ Type: DivideByZeroException
-💬 Message: Attempted to divide by zero.
-----------------------------------------------------
-🔍 STACK TRACE
-   at Program.Main() in Program.cs:line 54
-   at RootAlertMiddleware.Invoke()
+🔍 Stack Trace
+   at WeatherService.GetWeatherData() in WeatherService.cs:line 45
+   at RootAlertMiddleware.Invoke(HttpContext context)
 ----------------------------------------------------
 ```
 
 ---
+
+
+
+
 
