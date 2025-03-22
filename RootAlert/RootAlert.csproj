@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>RootAlert</PackageId>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
     <Authors>satsvelke</Authors>
     <Description>A Alert System for Exceptions .NET applications.</Description>
     <PackageTags>Alerts,Exceptions,.NET</PackageTags>
