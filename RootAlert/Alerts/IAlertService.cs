@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using RootAlert.Config;
 
 namespace RootAlert.Alerts

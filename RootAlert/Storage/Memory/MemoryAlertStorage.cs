@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Http;
 using RootAlert.Config;
 using RootAlert.Hashing;
 
@@ -11,15 +10,9 @@ public class MemoryAlertStorage : IRootAlertStorage
     private static readonly ConcurrentDictionary<string, ErrorLogEntry> _errorBatch = new();
     private static readonly object _lock = new();
 
-    public async Task AddToBatchAsync(Exception exception, HttpContext context)
+    public async Task AddToBatchAsync(Exception exception, RequestInfo requestInfo)
     {
         string errorKey = await HashGenerator.GenerateErrorHash(exception);
-
-        var requestInfo = new RequestInfo(
-            context.Request.Path,
-            context.Request.Method,
-            context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString())
-        );
 
         var exceptionInfo = new ExceptionInfo(exception.Message, exception!.StackTrace ?? "No stack trace available.", exception!.GetType().Name);
 

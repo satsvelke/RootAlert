@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../RootAlert.MSSQL/RootAlert.MSSQL.csproj" />
     <ProjectReference Include="../RootAlert.Redis/RootAlert.Redis.csproj" />
     <ProjectReference Include="../RootAlert/RootAlert.csproj" />
   </ItemGroup>

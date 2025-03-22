@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RootAlert.Alerts;
@@ -27,7 +28,14 @@ namespace RootAlert.Processing
 
         public void AddToBatch(Exception exception, HttpContext context)
         {
-            _rootAlertStorage.AddToBatchAsync(exception, context);
+
+            var requestInfo = new RequestInfo(
+                context.Request.Path.ToString(),
+                context.Request.Method,
+                JsonSerializer.Serialize(context.Request.Headers)
+            );
+
+            _rootAlertStorage.AddToBatchAsync(exception, requestInfo);
         }
 
         private async Task StartProcessingAsync(CancellationToken cancellationToken)

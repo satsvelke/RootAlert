@@ -17,7 +17,7 @@ namespace RootAlert.Redis
             _database = redis.GetDatabase();
         }
 
-        public async Task AddToBatchAsync(Exception exception, HttpContext context)
+        public async Task AddToBatchAsync(Exception exception, RequestInfo requestInfo)
         {
 
             var exceptionInfo = new ExceptionInfo(exception.Message, exception!.StackTrace ?? "No stack trace available.", exception!.GetType().Name);
@@ -26,10 +26,7 @@ namespace RootAlert.Redis
             {
                 Count = 1,
                 Exception = exceptionInfo,
-                Request = new RequestInfo(
-                    context.Request.Path,
-                    context.Request.Method,
-                    context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()))
+                Request = requestInfo
             };
 
             await _database.ListRightPushAsync(_batchKey, JsonSerializer.Serialize(errorEntry));

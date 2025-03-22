@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using RootAlert.Config;
-using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -29,10 +27,26 @@ namespace RootAlert.Alerts
 
             var errorBlocks = errors.Select((error, index) =>
             {
-                var headersList = error.Request!.Headers
-                    .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase)) // Exclude Authorization
-                    .Select(header => $"**{header.Key}:** `{header.Value}`")
+                var headersDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(error.Request!.Headers)
+                        ?? new Dictionary<string, object>();
+
+                var headersList = headersDictionary
+                    .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
+                    .Select(header =>
+                    {
+                        // Handle both single string and array values
+                        var value = header.Value switch
+                        {
+                            string singleValue => singleValue, // Single value
+                            JsonElement element when element.ValueKind == JsonValueKind.Array =>
+                                string.Join(", ", element.EnumerateArray().Select(e => e.GetString())), // Array of values
+                            _ => header.Value?.ToString() ?? string.Empty // Fallback for other types
+                        };
+
+                        return $"**{header.Key}:** `{value}`";
+                    })
                     .ToList();
+
 
                 string headersFormatted = string.Join("\n", headersList);
 

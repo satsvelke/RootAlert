@@ -4,7 +4,6 @@ using RootAlert.Storage.Memory;
 
 namespace RootAlert.Config
 {
-
     public class RootAlertSetting
     {
         public IRootAlertStorage Storage { get; set; } = new MemoryAlertStorage();

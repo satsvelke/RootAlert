@@ -1,5 +1,6 @@
 using RootAlert.Config;
 using RootAlert.Middleware;
+using RootAlert.MSSQL;
 using RootAlert.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,13 @@ var rootAlertSetting = new RootAlertSetting
     BatchInterval = TimeSpan.FromSeconds(20),
     RootAlertOptions = rootAlertOptions,
 };
+
+// var rootAlertSetting = new RootAlertSetting
+// {
+//     Storage = new MSSQLAlertStorage("Server=localhost;Database=RootAlert;User Id=sa;Password=satsvelke;Encrypt=False;TrustServerCertificate=True;"),
+//     BatchInterval = TimeSpan.FromSeconds(20),
+//     RootAlertOptions = rootAlertOptions,
+// };
 
 builder.Services.AddRootAlert(rootAlertSetting);
 
