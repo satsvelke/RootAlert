@@ -31,13 +31,13 @@ namespace RootAlert.Middleware
                     switch (option.AlertMethod)
                     {
                         case AlertType.Slack:
-                            alertServices.Add(new SlackAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<SlackAlertService>(), rootAlertSetting));
+                            alertServices.Add(new SlackAlertService(loggerFactory.CreateLogger<SlackAlertService>(), rootAlertSetting));
                             break;
                         case AlertType.Teams:
-                            alertServices.Add(new TeamsAlertService(option.WebhookUrl!, loggerFactory.CreateLogger<TeamsAlertService>(), rootAlertSetting));
+                            alertServices.Add(new TeamsAlertService(loggerFactory.CreateLogger<TeamsAlertService>(), rootAlertSetting));
                             break;
                         case AlertType.Email:
-                            alertServices.Add(new EmailAlertService(option.EmailSettings!, loggerFactory.CreateLogger<EmailAlertService>()));
+                            alertServices.Add(new EmailAlertService(loggerFactory.CreateLogger<EmailAlertService>(), rootAlertSetting));
                             break;
                     }
                 }

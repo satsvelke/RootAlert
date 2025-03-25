@@ -8,23 +8,20 @@ namespace RootAlert.Alerts
     public class SlackAlertService : IAlertService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _webhookUrl;
         private readonly ILogger<SlackAlertService> _logger;
         private readonly RootAlertSetting _rootAlertSetting;
-
-
-        public SlackAlertService(string webhookUrl, ILogger<SlackAlertService> logger, RootAlertSetting rootAlertSetting)
+        public SlackAlertService(ILogger<SlackAlertService> logger, RootAlertSetting rootAlertSetting)
         {
             _httpClient = new HttpClient();
-            _webhookUrl = webhookUrl;
             _logger = logger;
             _rootAlertSetting = rootAlertSetting;
         }
 
         public async Task SendBatchAlertAsync(IList<ErrorLogEntry> errors)
         {
-            var rootAlertOption = _rootAlertSetting.RootAlertOptions?
-                .FirstOrDefault(c => c.AlertMethod == AlertType.Slack);
+            var slackOption = _rootAlertSetting.RootAlertOptions?
+                                .OfType<SlackAlertOption>()
+                                .FirstOrDefault();
 
             var errorBlocks = new List<object>();
 
@@ -69,14 +66,14 @@ namespace RootAlert.Alerts
                         new { type = "divider" }
                     };
 
-                if (!string.IsNullOrWhiteSpace(rootAlertOption?.DashboardUrl))
+                if (!string.IsNullOrWhiteSpace(slackOption?.DashboardUrl))
                 {
                     errorDetails.Add(new
                     {
                         type = "actions",
                         elements = new object[]
                         {
-                    new { type = "button", text = new { type = "plain_text", text = "View Error Logs" }, url = rootAlertOption.DashboardUrl, style = "primary" }
+                    new { type = "button", text = new { type = "plain_text", text = "View Error Logs" }, url = slackOption.DashboardUrl, style = "primary" }
                         }
                     });
                 }
@@ -96,7 +93,7 @@ namespace RootAlert.Alerts
             var jsonPayload = JsonSerializer.Serialize(slackMessage);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(_webhookUrl, content);
+            var response = await _httpClient.PostAsync(slackOption?.WebhookUrl, content);
             response.EnsureSuccessStatusCode();
         }
     }

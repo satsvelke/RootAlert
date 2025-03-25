@@ -8,14 +8,12 @@ namespace RootAlert.Alerts
     public class TeamsAlertService : IAlertService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _webhookUrl;
         private readonly ILogger<TeamsAlertService> _logger;
         private readonly RootAlertSetting _rootAlertSetting;
 
-        public TeamsAlertService(string webhookUrl, ILogger<TeamsAlertService> logger, RootAlertSetting rootAlertSetting)
+        public TeamsAlertService(ILogger<TeamsAlertService> logger, RootAlertSetting rootAlertSetting)
         {
             _httpClient = new HttpClient();
-            _webhookUrl = webhookUrl;
             _logger = logger;
             _rootAlertSetting = rootAlertSetting;
         }
@@ -23,7 +21,7 @@ namespace RootAlert.Alerts
         public async Task SendBatchAlertAsync(IList<ErrorLogEntry> errors)
         {
 
-            var rootAlertOption = _rootAlertSetting.RootAlertOptions?.Where(c => c.AlertMethod == AlertType.Teams).FirstOrDefault();
+            var teamsAlertOption = _rootAlertSetting.RootAlertOptions?.OfType<TeamsAlertOption>().Where(c => c.AlertMethod == AlertType.Teams).FirstOrDefault();
 
             var errorBlocks = errors.Select((error, index) =>
             {
@@ -76,11 +74,11 @@ namespace RootAlert.Alerts
 
 
             object[]? actions = null;
-            if (!string.IsNullOrWhiteSpace(rootAlertOption?.DashboardUrl))
+            if (!string.IsNullOrWhiteSpace(teamsAlertOption?.DashboardUrl))
             {
                 actions = new object[]
                 {
-                     new { type = "Action.OpenUrl", title = "View Error Logs", url = rootAlertOption.DashboardUrl }
+                     new { type = "Action.OpenUrl", title = "View Error Logs", url = teamsAlertOption.DashboardUrl }
                 };
             }
 
@@ -109,7 +107,7 @@ namespace RootAlert.Alerts
             var jsonPayload = JsonSerializer.Serialize(adaptiveCard);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(_webhookUrl, content);
+            var response = await _httpClient.PostAsync(teamsAlertOption?.WebhookUrl, content);
         }
     }
 }
