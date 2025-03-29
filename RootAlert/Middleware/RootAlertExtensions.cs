@@ -36,7 +36,7 @@ namespace RootAlert.Middleware
                         case AlertType.Teams:
                             alertServices.Add(new TeamsAlertService(loggerFactory.CreateLogger<TeamsAlertService>(), rootAlertSetting));
                             break;
-                        case AlertType.Email:
+                        case AlertType.SMTPEmail:
                             alertServices.Add(new EmailAlertService(loggerFactory.CreateLogger<EmailAlertService>(), rootAlertSetting));
                             break;
                     }

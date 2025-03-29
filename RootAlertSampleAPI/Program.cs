@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Mail;
 using RootAlert.Config;
 using RootAlert.Middleware;
 using RootAlert.MSSQL;
@@ -12,16 +14,18 @@ builder.Services.AddOpenApi();
 
 var rootAlertOptions = new List<RootAlertOption>
 {
-    new TeamsAlertOption
-    {
-        AlertMethod = AlertType.Teams,
-        WebhookUrl = "https://itshastra1.webhook.office.com/webhookb2/40f09ce9-ca1d-4105-a331-e7a95edd2d00@033c5e8c-b979-4b19-b7b5-6e1113d741af/IncomingWebhook/e78a8e83c1494a15b0426b89a145160b/007b8ed3-76a8-40c6-9fa5-63d75bb4a432/V2vsotinXwxmeUhvbX-niJ5InF23LFzJ_Uim66L_-1h9o1"
-    },
+    // new TeamsAlertOption
+    // {
+    //     AlertMethod = AlertType.Teams,
+    //     WebhookUrl = "https://itshastra1.webhook.office.com/webhookb2/40f09ce9-ca1d-4105-a331-e7a95edd2d00@033c5e8c-b979-4b19-b7b5-6e1113d741af/IncomingWebhook/e78a8e83c1494a15b0426b89a145160b/007b8ed3-76a8-40c6-9fa5-63d75bb4a432/V2vsotinXwxmeUhvbX-niJ5InF23LFzJ_Uim66L_-1h9o1"
+    // },
     // new SlackAlertOption
     // {
     //     AlertMethod = AlertType.Slack,
     //     WebhookUrl = ""
     // }
+
+
 };
 
 
