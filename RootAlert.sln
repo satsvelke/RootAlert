@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert.Redis", "RootAler
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert.MSSQL", "RootAlert.MSSQL\RootAlert.MSSQL.csproj", "{6DB57F69-80CD-481F-B9C0-8F88F31BCB3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RootAlert.Tests", "RootAlert.Tests\RootAlert.Tests.csproj", "{F9680B3D-8AE3-4071-8E9F-C3429246D33A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{6DB57F69-80CD-481F-B9C0-8F88F31BCB3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DB57F69-80CD-481F-B9C0-8F88F31BCB3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DB57F69-80CD-481F-B9C0-8F88F31BCB3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9680B3D-8AE3-4071-8E9F-C3429246D33A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9680B3D-8AE3-4071-8E9F-C3429246D33A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9680B3D-8AE3-4071-8E9F-C3429246D33A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9680B3D-8AE3-4071-8E9F-C3429246D33A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

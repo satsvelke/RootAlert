@@ -7,18 +7,38 @@ using StackExchange.Redis;
 
 namespace RootAlert.Redis
 {
-    public sealed class RedisAlertStorage : IRootAlertStorage
+    public class RedisAlertStorage : IRootAlertStorage
     {
-        private readonly IDatabase _database;
+
+        private readonly IConnectionMultiplexer? _redis;
         private const string _batchKey = "RootAlert:ErrorBatch";
         private readonly ILogger<RedisAlertStorage> _logger;
+        private readonly string _redisConnectionString;
 
         public RedisAlertStorage(string redisConnectionString, ILogger<RedisAlertStorage>? logger = null)
         {
-            var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-            _database = redis.GetDatabase();
+            _redisConnectionString = redisConnectionString;
             _logger = logger ?? NullLogger<RedisAlertStorage>.Instance;
+
+            try
+            {
+                _redis = ConnectionMultiplexer.Connect(redisConnectionString);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "RootAlert: Failed to connect to Redis");
+            }
         }
+
+        protected virtual IDatabase GetDatabase()
+        {
+            if (_redis == null)
+            {
+                throw new InvalidOperationException("Redis connection not established");
+            }
+            return _redis.GetDatabase();
+        }
+
 
         public async Task AddToBatchAsync(Exception exception, RequestInfo requestInfo)
         {
@@ -32,8 +52,8 @@ namespace RootAlert.Redis
                     Exception = exceptionInfo,
                     Request = requestInfo
                 };
-
-                await _database.ListRightPushAsync(_batchKey, JsonSerializer.Serialize(errorEntry));
+                var database = GetDatabase();
+                await database.ListRightPushAsync(_batchKey, JsonSerializer.Serialize(errorEntry));
             }
             catch (Exception ex)
             {
@@ -46,10 +66,12 @@ namespace RootAlert.Redis
 
             try
             {
-                var errorBatch = new Dictionary<string, ErrorLogEntry>();
-                var errorCount = await _database.ListLengthAsync(_batchKey);
+                var database = GetDatabase();
 
-                var errorEntries = await _database.ListRangeAsync(_batchKey, 0, errorCount - 1);
+                var errorBatch = new Dictionary<string, ErrorLogEntry>();
+                var errorCount = await database.ListLengthAsync(_batchKey);
+
+                var errorEntries = await database.ListRangeAsync(_batchKey, 0, errorCount - 1);
 
                 foreach (var errorJson in errorEntries)
                 {
@@ -73,7 +95,7 @@ namespace RootAlert.Redis
                     }
                 }
 
-                await _database.KeyDeleteAsync(_batchKey);
+                await database.KeyDeleteAsync(_batchKey);
 
                 return errorBatch.Values.ToList();
 
@@ -90,7 +112,8 @@ namespace RootAlert.Redis
         {
             try
             {
-                await _database.KeyDeleteAsync(_batchKey);
+                var database = GetDatabase();
+                await database.KeyDeleteAsync(_batchKey);
             }
             catch (Exception ex)
             {
