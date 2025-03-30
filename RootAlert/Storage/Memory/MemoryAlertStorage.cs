@@ -4,7 +4,7 @@ using RootAlert.Hashing;
 
 namespace RootAlert.Storage.Memory;
 
-public class MemoryAlertStorage : IRootAlertStorage
+internal sealed class MemoryAlertStorage : IRootAlertStorage
 {
 
     private static readonly ConcurrentDictionary<string, ErrorLogEntry> _errorBatch = new();

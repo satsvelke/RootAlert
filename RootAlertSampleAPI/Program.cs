@@ -3,6 +3,7 @@ using System.Net.Mail;
 using RootAlert.Config;
 using RootAlert.Middleware;
 using RootAlert.MSSQL;
+using RootAlert.Processing;
 using RootAlert.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,9 +85,19 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 
-app.MapGet("/getuser", () =>
+app.MapGet("/getuser", (RootAlertProcessor rootAlertProcessor) =>
 {
-    throw new Exception("wheather api failed to call");
+    try
+    {
+        // Simulate an error that we want to batch manually.
+        throw new Exception("this is test to call method ");
+    }
+    catch (Exception ex)
+    {
+        // Log the exception via RootAlertProcessor before propagating it.
+        rootAlertProcessor.AddException(ex);
+        throw;
+    }
 });
 
 app.Run();

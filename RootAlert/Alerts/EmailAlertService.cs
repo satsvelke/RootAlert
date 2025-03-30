@@ -114,10 +114,8 @@ namespace RootAlert.Alerts
                 Root Alert - Batched Error Summary
             </h1>
         </div>
-");
-
-            // Nav with total errors right-aligned
-            sb.AppendLine(@"
+        
+        <!-- Nav with total errors right-aligned -->
         <div style='
             background: linear-gradient(to right, rgba(255,71,87,0.1), rgba(33,150,243,0.1)); 
             border-radius: 12px; 
@@ -127,7 +125,7 @@ namespace RootAlert.Alerts
             <div style='
                 display: inline-block; 
                 font-size: 16px; 
-                font-weight: 500;'>
+                font-weight: 500;color: white'>
                 Total Errors: <strong style='color: #ff4757; font-size: 18px;'>");
             sb.Append(errors.Count);
             sb.AppendLine(@"</strong>
@@ -169,9 +167,7 @@ namespace RootAlert.Alerts
                                 <span>🔴</span> Error #{i + 1}
                             </h2>
                         </td>
-                        <td style='
-                            vertical-align: middle; 
-                            text-align: right;'>
+                        <td style='vertical-align: middle; text-align: right;'>
                             <div style='
                                 display: inline-block; 
                                 background-color: rgba(0,0,0,0.2); 
@@ -210,7 +206,10 @@ namespace RootAlert.Alerts
                                 margin-bottom: 6px;'>
                                 <span>📅</span> Timestamp
                             </div>
-                            <div style='font-size: 14px; word-break: break-word;'>
+                            <div style='
+                                font-size: 14px; 
+                                word-break: break-word;
+                                color: #f5f5f5;'>
                                 {timestamp}
                             </div>
                         </td>
@@ -229,7 +228,10 @@ namespace RootAlert.Alerts
                                 margin-bottom: 6px;'>
                                 <span>🌐</span> Request URL
                             </div>
-                            <div style='font-size: 14px; word-break: break-word;'>
+                            <div style='
+                                font-size: 14px; 
+                                word-break: break-word;
+                                color: #f5f5f5;'>
                                 {(error.Request?.Url ?? "N/A")}
                             </div>
                         </td>
@@ -248,7 +250,10 @@ namespace RootAlert.Alerts
                                 margin-bottom: 6px;'>
                                 <span>🏷️</span> HTTP Method
                             </div>
-                            <div style='font-size: 14px; word-break: break-word;'>
+                            <div style='
+                                font-size: 14px; 
+                                word-break: break-word;
+                                color: #f5f5f5;'>
                                 {(error.Request?.Method ?? "N/A")}
                             </div>
                         </td>
@@ -259,30 +264,30 @@ namespace RootAlert.Alerts
                 // Render Request Headers
                 if (!string.IsNullOrEmpty(error.Request?.Headers))
                 {
-                    // Attempt to parse the JSON into a Dictionary<string, string>
+                    // Attempt to parse the JSON into a Dictionary<string, object>
                     Dictionary<string, object>? headersDict = null;
                     var headersList = new List<string>();
                     try
                     {
                         headersDict = JsonSerializer.Deserialize<Dictionary<string, object>>(error.Request.Headers);
-
-
                         headersList = headersDict!
-                           .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
-                           .Select(header =>
-                           {
-                               // Handle both single string and array values
-                               var value = header.Value switch
-                               {
-                                   string singleValue => singleValue, // Single value
-                                   JsonElement element when element.ValueKind == JsonValueKind.Array =>
-                                       string.Join(", ", element.EnumerateArray().Select(e => e.GetString())), // Array of values
-                                   _ => header.Value?.ToString() ?? string.Empty // Fallback for other types
-                               };
-
-                               return $"**{header.Key}:** `{value}`";
-                           })
-                           .ToList();
+                            .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
+                            .Select(header =>
+                            {
+                                // Handle both single string and array values
+                                var value = header.Value switch
+                                {
+                                    string singleValue => singleValue,
+                                    JsonElement element when element.ValueKind == JsonValueKind.Array =>
+                                        string.Join(", ", element.EnumerateArray().Select(e => e.GetString())),
+                                    _ => header.Value?.ToString() ?? string.Empty
+                                };
+                                return $"<tr>" +
+                                       $"<td style='font-weight: 500; color: #2196f3; padding: 6px; vertical-align: top;'>{header.Key}:</td>" +
+                                       $"<td style='padding: 6px; word-break: break-word; color: #f5f5f5;'>{value}</td>" +
+                                       $"</tr>";
+                            })
+                            .ToList();
                     }
                     catch
                     {
@@ -291,7 +296,6 @@ namespace RootAlert.Alerts
 
                     if (headersList != null && headersList.Count > 0)
                     {
-                        // Build a table of headers
                         sb.AppendLine(@"
                 <div style='
                     background-color: rgba(255,255,255,0.03); 
@@ -310,19 +314,9 @@ namespace RootAlert.Alerts
                     </div>
                     <table width='100%' border='0' cellspacing='0' cellpadding='0' style='border-collapse: collapse;'>
 ");
-                        foreach (var kvp in headersList)
+                        foreach (var row in headersList)
                         {
-                            sb.AppendLine($@"
-                        <tr>
-                            <td width='25%' style='
-                                font-weight: 500; 
-                                color: #2196f3; 
-                                padding: 6px; 
-                                vertical-align: top;'>
-                                {kvp}:
-                            </td>
-                          
-                        </tr>");
+                            sb.AppendLine(row);
                         }
                         sb.AppendLine(@"
                     </table>
@@ -347,20 +341,17 @@ namespace RootAlert.Alerts
                         margin-bottom: 10px;'>
                         <span>📨</span> Request Headers
                     </div>
-                    <div style='
-                        font-weight: 500; 
-                        color: #2196f3; 
-                        margin-bottom: 6px;'>
+                    <div style='font-weight: 500; color: #2196f3; margin-bottom: 6px;'>
                         Headers:
                     </div>
-                    <div style='font-size:14px;'>
+                    <div style='font-size:14px; color: #f5f5f5;'>
                         {error.Request.Headers}
                     </div>
                 </div>");
                     }
                 }
 
-                // Exception
+                // Exception section
                 if (error.Exception != null)
                 {
                     sb.AppendLine($@"
@@ -381,26 +372,12 @@ namespace RootAlert.Alerts
                     </h3>
                     <div style='margin-bottom: 15px;'>
                         <div style='margin-bottom: 8px;'>
-                            <span style='
-                                font-weight: 500; 
-                                margin-right: 8px; 
-                                color: #b0b0b0;'>
-                                Type:
-                            </span> 
-                            <span style='font-size:14px;'>
-                                {error.Exception.Name}
-                            </span>
+                            <span style='font-weight: 500; margin-right: 8px; color: #b0b0b0;'>Type:</span> 
+                            <span style='font-size:14px; color: #f5f5f5;'>{error.Exception.Name}</span>
                         </div>
                         <div style='margin-bottom: 8px;'>
-                            <span style='
-                                font-weight: 500; 
-                                margin-right: 8px; 
-                                color: #b0b0b0;'>
-                                Message:
-                            </span> 
-                            <span style='font-size:14px;'>
-                                {error.Exception.Message}
-                            </span>
+                            <span style='font-weight: 500; margin-right: 8px; color: #b0b0b0;'>Message:</span> 
+                            <span style='font-size:14px; color: #f5f5f5;'>{error.Exception.Message}</span>
                         </div>
                     </div>
                     <div style='
@@ -429,5 +406,6 @@ namespace RootAlert.Alerts
 
             return sb.ToString();
         }
+
     }
 }

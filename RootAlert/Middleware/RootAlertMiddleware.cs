@@ -4,7 +4,7 @@ using RootAlert.Processing;
 
 namespace RootAlert.Middleware
 {
-    public class RootAlertMiddleware
+    public sealed class RootAlertMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<RootAlertMiddleware> _logger;

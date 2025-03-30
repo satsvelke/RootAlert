@@ -7,7 +7,7 @@ using RootAlert.Storage;
 
 namespace RootAlert.Processing
 {
-    public class RootAlertProcessor : IDisposable
+    public sealed class RootAlertProcessor : IDisposable
     {
         private readonly ILogger _logger;
         private readonly TimeSpan _batchInterval;
@@ -26,7 +26,7 @@ namespace RootAlert.Processing
             _processingTask = Task.Run(() => StartProcessingAsync(_cancellationTokenSource.Token));
         }
 
-        public void AddToBatch(Exception exception, HttpContext context)
+        internal void AddToBatch(Exception exception, HttpContext context)
         {
 
             var requestInfo = new RequestInfo(
@@ -35,6 +35,18 @@ namespace RootAlert.Processing
                 JsonSerializer.Serialize(context.Request.Headers)
             );
 
+            _rootAlertStorage.AddToBatchAsync(exception, requestInfo);
+        }
+
+        /// <summary>
+        /// Adds an exception to the batch without requiring a HttpContext.
+        /// This overload is intended for cases where the exception is raised on a different thread
+        /// or where a HttpContext is not available.
+        /// </summary>
+        public void AddException(Exception exception)
+        {
+            // Create a default RequestInfo for manual exceptions.
+            var requestInfo = new RequestInfo("N/A", "N/A", "{}");
             _rootAlertStorage.AddToBatchAsync(exception, requestInfo);
         }
 

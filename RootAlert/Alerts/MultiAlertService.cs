@@ -3,7 +3,7 @@ using RootAlert.Config;
 
 namespace RootAlert.Alerts
 {
-    public class MultiAlertService : IAlertService
+    internal sealed class MultiAlertService : IAlertService
     {
         private readonly List<IAlertService> _alertServices;
 

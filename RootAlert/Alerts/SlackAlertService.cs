@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace RootAlert.Alerts
 {
-    public class SlackAlertService : IAlertService
+    internal sealed class SlackAlertService : IAlertService
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<SlackAlertService> _logger;
@@ -19,41 +19,55 @@ namespace RootAlert.Alerts
 
         public async Task SendBatchAlertAsync(IList<ErrorLogEntry> errors)
         {
-            var slackOption = _rootAlertSetting.RootAlertOptions?
-                                .OfType<SlackAlertOption>()
-                                .FirstOrDefault();
-
-            var errorBlocks = new List<object>();
-
-            foreach (var (error, index) in errors.Select((e, i) => (e, i)))
+            try
             {
-                // Exclude Authorization
-                var headersDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(error.Request!.Headers)
-                        ?? new Dictionary<string, object>();
+                var slackOption = _rootAlertSetting.RootAlertOptions?
+                                    .OfType<SlackAlertOption>()
+                                    .FirstOrDefault();
 
-                var headersList = headersDictionary
-                    .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
-                    .Select(header =>
-                    {
-                        // Handle both single string and array values
-                        var value = header.Value switch
+                if (slackOption is null)
+                {
+                    _logger.LogError("Slack options are not properly configured.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(slackOption.WebhookUrl))
+                {
+                    _logger.LogError("Teams webhook urlfigured.");
+                    return;
+                }
+
+                var errorBlocks = new List<object>();
+
+                foreach (var (error, index) in errors.Select((e, i) => (e, i)))
+                {
+                    // Exclude Authorization
+                    var headersDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(error.Request!.Headers)
+                            ?? new Dictionary<string, object>();
+
+                    var headersList = headersDictionary
+                        .Where(header => !header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
+                        .Select(header =>
                         {
-                            string singleValue => singleValue, // Single value
-                            JsonElement element when element.ValueKind == JsonValueKind.Array =>
-                                string.Join(", ", element.EnumerateArray().Select(e => e.GetString())), // Array of values
-                            _ => header.Value?.ToString() ?? string.Empty // Fallback for other types
-                        };
+                            // Handle both single string and array values
+                            var value = header.Value switch
+                            {
+                                string singleValue => singleValue, // Single value
+                                JsonElement element when element.ValueKind == JsonValueKind.Array =>
+                                    string.Join(", ", element.EnumerateArray().Select(e => e.GetString())), // Array of values
+                                _ => header.Value?.ToString() ?? string.Empty // Fallback for other types
+                            };
 
-                        return $"**{header.Key}:** `{value}`";
-                    })
-                    .ToList();
+                            return $"**{header.Key}:** `{value}`";
+                        })
+                        .ToList();
 
 
-                string headersFormatted = headersList.Any() ? string.Join("\n", headersList) : "No headers available.";
-                string stackTrace = error.Exception?.StackTrace ?? "No stack trace available.";
-                string errorMessage = error.Exception?.Message ?? "No error message.";
+                    string headersFormatted = headersList.Any() ? string.Join("\n", headersList) : "No headers available.";
+                    string stackTrace = error.Exception?.StackTrace ?? "No stack trace available.";
+                    string errorMessage = error.Exception?.Message ?? "No error message.";
 
-                var errorDetails = new List<object>
+                    var errorDetails = new List<object>
                     {
                         new { type = "header", text = new { type = "plain_text", text = $"🔴 Error #{index + 1}", emoji = true } },
                         new { type = "section", text = new { type = "plain_text", text = $"Error Count: {error.Count}", emoji = true } },
@@ -66,35 +80,40 @@ namespace RootAlert.Alerts
                         new { type = "divider" }
                     };
 
-                if (!string.IsNullOrWhiteSpace(slackOption?.DashboardUrl))
-                {
-                    errorDetails.Add(new
+                    if (!string.IsNullOrWhiteSpace(slackOption?.DashboardUrl))
                     {
-                        type = "actions",
-                        elements = new object[]
+                        errorDetails.Add(new
                         {
+                            type = "actions",
+                            elements = new object[]
+                            {
                     new { type = "button", text = new { type = "plain_text", text = "View Error Logs" }, url = slackOption.DashboardUrl, style = "primary" }
-                        }
-                    });
+                            }
+                        });
+                    }
+
+                    errorBlocks.AddRange(errorDetails);
                 }
 
-                errorBlocks.AddRange(errorDetails);
-            }
-
-            var slackMessage = new
-            {
-                blocks = new List<object>
+                var slackMessage = new
+                {
+                    blocks = new List<object>
                 {
                     new { type = "section", text = new { type = "mrkdwn", text = "*🚨 Root Alert - Batched Error Summary*" } },
                     new { type = "divider" }
                 }.Concat(errorBlocks).ToArray()
-            };
+                };
 
-            var jsonPayload = JsonSerializer.Serialize(slackMessage);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                var jsonPayload = JsonSerializer.Serialize(slackMessage);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(slackOption?.WebhookUrl, content);
-            response.EnsureSuccessStatusCode();
+                var response = await _httpClient.PostAsync(slackOption?.WebhookUrl, content);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send batch alert on slack.");
+            }
         }
     }
 }
